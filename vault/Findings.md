@@ -1,0 +1,10 @@
+##### 10/23/24
+Cosine similarity has a weak correlation to semantic similarity, but look at the correlation of the cosine similarity of each pair of vectors per layer
+
+(I.e. `cos_sim(sentence1_acts[layer], sentence2_acts[layer]`)
+![[cosine_corr_per_layer_gpt2medium.png]]
+This is for gpt2-medium. Notice how weird that correlation is. Now look at gpt2-small.
+![[cosine_corr_per_layer_gpt2small.png]]
+Really similar!! This **suggests** some kind of property of the model.There's probably a **sweet spot** for representation. Again, cosine similarity sucks balls but the correlation is undeniable.
+
+**Should this guide our training?**
