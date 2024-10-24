@@ -1,7 +1,9 @@
+## Assumptions
+- Different intermediate layers have meaningfully different activation spaces -- they encode different stuff at different layers.
 #### Mixture model
 Try and train `num_layers` separate small models that can act as "experts" at their respective layer, then collect them into a mixture model.
 
-Maybe we could learn independent, layerwise siamese networks? And then pass it into `CosineWeighter`?
+Maybe we could learn independent, layerwise siamese networks? And then pass it into `CosineWeighter`? I think weighted layerwise cosine distance is a really good way to go, but it's just that our activation spaces aren't really good for that. Maybe we can learn a new representation that is more amenable to cosine similarity?
 
 #### Loss function
 * Do we just try to get the model to output a scalar? Or do we discretize a scalar into a set of categories? (I.e. instead of just [0,1] the model outputs a 6 dimensional vector representing logits for [0/5, 1/5, 2/5, 3/5, 4/5, 5/5]). Getting the model to output a scalar seems like it would be hard to train. But there's stuff like https://pytorch.org/docs/stable/generated/torch.nn.MarginRankingLoss.html that make that more possible.
@@ -63,4 +65,4 @@ tensor([[1.0000, 0.3680],
 ```
 So 38% train correlation, 36% test. Already better than cosine!
 
-So now okay maybe instead of just doing raw cosine, we learn a transformation, do cosine on that, and then do everything else the same. Maybe learning a transformation of activation space would be useful here. Ideally it would learn a different transformation for each layer
+So now okay maybe instead of just doing raw cosine, we learn a transformation, do cosine on that, and then do everything else the same. Maybe learning a transformation of activation space would be useful here. Ideally it would learn a different transformation for each layer  
