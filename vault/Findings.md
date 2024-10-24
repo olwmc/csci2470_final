@@ -5,6 +5,6 @@ Cosine similarity has a weak correlation to semantic similarity, but look at the
 ![[cosine_corr_per_layer_gpt2medium.png]]
 This is for gpt2-medium. Notice how weird that correlation is. Now look at gpt2-small.
 ![[cosine_corr_per_layer_gpt2small.png]]
-Really similar!! This **suggests** some kind of property of the model.There's probably a **sweet spot** for representation. Again, cosine similarity sucks balls but the correlation is undeniable.
+Really similar!! This **suggests** some kind of property of the architecture.There's probably a **sweet spot** for representation. Again, cosine similarity sucks balls but the correlation is undeniable. Maybe the sweet spot for a learned similarity metric isn't the same as for cosine similarity, but the idea of there being a sweet spot is probably important.
 
-**Should this guide our training?**
+**Should this guide our training?** One idea could be to have some kind of weighted cosine similarity informed by this data. Could a "learned mixture" do better than layer 10?
