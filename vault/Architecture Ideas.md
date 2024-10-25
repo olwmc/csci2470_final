@@ -65,4 +65,4 @@ tensor([[1.0000, 0.3680],
 ```
 So 38% train correlation, 36% test. Already better than cosine!
 
-So now okay maybe instead of just doing raw cosine, we learn a transformation, do cosine on that, and then do everything else the same. Maybe learning a transformation of activation space would be useful here. Ideally it would learn a different transformation for each layer  
+So now okay maybe instead of just doing raw cosine, we learn a transformation, do cosine on that, and then do everything else the same. Maybe learning a transformation of activation space would be useful here. Ideally it would learn a different transformation for each layer. Like a set of layerwise siamese networks. Maybe we start off training the siamese networks like encoders, get a good reconstruction loss, and then swap them over to being siamese networks. Then we can leverage the goodness of training an autoencoder (learns a good representation that we don't have to just use )
