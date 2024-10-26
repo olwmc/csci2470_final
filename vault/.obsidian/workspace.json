@@ -176,13 +176,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "8edaf7b29a1e20c2",
+  "active": "23cb238dfe9c5d33",
   "lastOpenFiles": [
-    "encoder_loss.png",
-    "encoder_loss 1.png",
-    "Findings.md",
     "Architecture Ideas.md",
     "Meta info.md",
+    "Findings.md",
+    "encoder_loss.png",
+    "encoder_loss 1.png",
     "cosine_corr_per_layer_gpt2small.png",
     "cosine_corr_per_layer_gpt2medium.png",
     "Ideas we should try.md",
