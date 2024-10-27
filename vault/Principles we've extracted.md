@@ -1,0 +1,2 @@
+- Layerwise MLP's work really well for stuff like this
+- Learning autoencoders gets harder and harder the deeper you go, so increase your MLP size as you get deeper. Harder representational problem => need more representational capacity (Evidenced by [[Findings#10/25/24]])
