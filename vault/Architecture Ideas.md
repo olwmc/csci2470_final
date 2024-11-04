@@ -66,3 +66,6 @@ tensor([[1.0000, 0.3680],
 So 38% train correlation, 36% test. Already better than cosine!
 
 So now okay maybe instead of just doing raw cosine, we learn a transformation, do cosine on that, and then do everything else the same. Maybe learning a transformation of activation space would be useful here. Ideally it would learn a different transformation for each layer. Like a set of layerwise siamese networks. Maybe we start off training the siamese networks like encoders, get a good reconstruction loss, and then swap them over to being siamese networks. Then we can leverage the goodness of training an autoencoder (learns a good representation that we don't have to just use )
+
+## Multiple embedding vectors?
+What if we split the layers into three distinct sets. "Early", "Middle", "Late" and condense the eight vectors each down into a single vector using bottleneck attention. Then, we end up with (maybe LOL) three separate vectors that correspond to different "depths" of features. Maybe the idea to think about is "syntactic", "mix", "semantic". I have no idea if this would even work but it gives you a few separate vectors that you can apply to particular tasks. It's kind of weird that "embedding" is always one single vector and not more than one
