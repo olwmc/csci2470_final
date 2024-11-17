@@ -1,0 +1,66 @@
+MT-DNN-SMART, 0.925, 0.929
+StructBERTRoBERTa ensemble, 0.924, 0.928
+Mnet-Sim, 0.931, 0.927
+T5-11B, 0.921, 0.925
+ALBERT, null, 0.925
+XLNet (single model), null, 0.925
+RoBERTa, null, 0.922
+ELECTRA, null, 0.921
+RoBERTa-large 355M (MLP quantized vector-wise, fine-tuned), null, 0.919
+PSQ (Chen et al., 2020), null, 0.919
+RoBERTa-large 355M + Entailment as Few-shot Learner, null, 0.918
+ERNIE 2.0 Large, null, 0.912
+Q-BERT (Shen et al., 2020), null, 0.911
+Q8BERT (Zafrir et al., 2019), null, 0.911
+ELECTRA (no tricks), null, 0.91
+DistilBERT 66M, null, 0.907
+T5-3B, 0.898, 0.906
+MLM+ del-word, null, 0.905
+RealFormer, 0.8988, 0.9011
+T5-Large, null, 0.899
+SpanBERT, null, 0.899
+T5-Base, null, 0.894
+ERNIE 2.0 Base, null, 0.876
+Charformer-Tall, null, 0.873
+T5-Small, 0.85, 0.856
+ERNIE, null, 0.832
+24hBERT, null, 0.82
+TinyBERT-4 14.5M, null, 0.799
+USE_T, null, 0.782
+AnglE-LLaMA-13B, 0.8969, null
+ASA + RoBERTa, 0.892, null
+PromptEOL+CSE+LLaMA-30B, 0.8914, null
+AnglE-LLaMA-7B, 0.8897, null
+AnglE-LLaMA-7B-v2, 0.8897, null
+T5-Large 770M, 0.886, null
+PromptEOL+CSE+OPT-13B, 0.8856, null
+PromptEOL+CSE+OPT-2.7B, 0.8833, null
+PromCSE-RoBERTa-large (0.355B), 0.8787, null
+BigBird, 0.878, null
+SimCSE-RoBERTalarge, 0.867, null
+Trans-Encoder-RoBERTa-large-cross (unsup.), 0.867, null
+Trans-Encoder-RoBERTa-large-bi (unsup.), 0.8655, null
+BERT-LARGE, 0.865, null
+ASA + BERT-base, 0.865, null
+Trans-Encoder-BERT-large-bi (unsup.), 0.8616, null
+SRoBERTa-NLI-STSb-large, 0.8615, null
+SBERT-STSb-base, 0.8479, null
+Trans-Encoder-RoBERTa-base-cross (unsup.), 0.8465, null
+SBERT-STSb-large, 0.8445, null
+FNet-Large, 0.84, null
+Trans-Encoder-BERT-base-bi (unsup.), 0.839, null
+Pearl, 0.7981, null
+SBERT-NLI-large, 0.79, null
+Mirror-RoBERTa-base (unsup.), 0.787, null
+Dino (STSb/̄🦕), 0.7782, null
+SRoBERTa-NLI-base, 0.7777, null
+SBERT-NLI-base, 0.7703, null
+Dino (STS/̄🦕), 0.7651, null
+Mirror-BERT-base (unsup.), 0.764, null
+BERTlarge-flow (target), 0.7226, null
+IS-BERT-NLI, 0.6921, null
+Rematch, 0.6652, null
+Def2Vec, 0.6372, null
+DeBERTa (large), null, null
+SMARTRoBERTa, null, null
+SMART-BERT, null, null
