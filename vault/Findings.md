@@ -16,3 +16,5 @@ Really similar!! This **suggests** some kind of property of the architecture.The
 It is *easier to learn autoencoders for residual activations on earlier layers*. In fact *the difficulty of learning layerwise autoencoders scales almost with their depth*
 ![](encoder_loss.png)
 I think this is a really important signal -- You probably need bigger autoencoders the farther down in layers you go!!
+
+##### 11/11/2024
