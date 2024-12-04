@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{gpt2malware}
 Mahmoud Basharat and Marwan Omar.
@@ -26,8 +26,23 @@ Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean W
 Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch.
 \newblock Pretrained transformers as universal computation engines, 2021.
 
+\bibitem{muennighoff2022mteb}
+Niklas Muennighoff, Nouamane Tazi, Lo{\"\i}c Magne, and Nils Reimers.
+\newblock Mteb: Massive text embedding benchmark.
+\newblock {\em arXiv preprint arXiv:2210.07316}, 2022.
+
+\bibitem{reimers2019sentencebertsentenceembeddingsusing}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-bert: Sentence embeddings using siamese bert-networks, 2019.
+
 \bibitem{tang2024poolingattentioneffectivedesigns}
 Yixuan Tang and Yi~Yang.
 \newblock Pooling and attention: What are effective designs for llm-based embedding models?, 2024.
+
+\bibitem{LLMEmbed}
+Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder, and Furu Wei.
+\newblock Improving text embeddings with large language models.
+\newblock (arXiv:2401.00368), May 2024.
+\newblock arXiv:2401.00368.
 
 \end{thebibliography}
