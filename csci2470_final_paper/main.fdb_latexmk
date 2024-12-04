@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1733327083.98044 "main.aux" "main.bbl" "main" 1733327221.03493 0
+["bibtex main"] 1733327820.37878 "main.aux" "main.bbl" "main" 1733327992.19775 0
   "./mybib.bib" 1733069371.31593 11731 76c4df0bb6dfd6fa865d89449d12a5f0 ""
   "/nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/bibtex/bst/base/plain.bst" 1 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1733327220.88672 2987 51984797408436b2c596fa76be966cbb "pdflatex"
+  "main.aux" 1733327992.05077 3231 8b797591252de0f4a9666978322be795 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1733327220.58764 "/home/bufo/current/research/csci2470_final/csci2470_final_paper/main.tex" "main.pdf" "main" 1733327221.03518 0
-  "/home/bufo/current/research/csci2470_final/csci2470_final_paper/main.tex" 1733327220.42473 53898 b1a8da552157e827c93abd8816781298 ""
+["pdflatex"] 1733327991.7508 "/home/bufo/current/research/csci2470_final/csci2470_final_paper/main.tex" "main.pdf" "main" 1733327992.19794 0
+  "/home/bufo/current/research/csci2470_final/csci2470_final_paper/main.tex" 1733327991.53777 53691 ed8203400c2383b878ad2fdfa16ef1d3 ""
   "/nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -86,9 +86,9 @@
   "/nix/store/hyyc2gbjy7m0b1b69863i6zyjkgadynz-texlive-combined-full-2023-final/share/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1 5467763 7772323b3bde8094e69c9b0de4eb6b37 ""
   "/nix/store/hyyc2gbjy7m0b1b69863i6zyjkgadynz-texlive-combined-full-2023-final/share/texmf-var/web2c/pdftex/pdflatex.fmt" 1 8221983 abfe7fe166845452cc9b97e2608f72ac ""
   "/nix/store/hyyc2gbjy7m0b1b69863i6zyjkgadynz-texlive-combined-full-2023-final/share/texmf-var/web2c/texmf.cnf" 1 43155 ec2c990378ae3a99dfeaeebb73f46ac2 ""
-  "main.aux" 1733327220.88672 2987 51984797408436b2c596fa76be966cbb "pdflatex"
-  "main.bbl" 1733327084.02773 2211 b27e671a90d73cc0a6cfda94aaf3650a "bibtex main"
-  "main.tex" 1733327220.42473 53898 b1a8da552157e827c93abd8816781298 ""
+  "main.aux" 1733327992.05077 3231 8b797591252de0f4a9666978322be795 "pdflatex"
+  "main.bbl" 1733327820.43029 2211 b27e671a90d73cc0a6cfda94aaf3650a "bibtex main"
+  "main.tex" 1733327991.53777 53691 ed8203400c2383b878ad2fdfa16ef1d3 ""
   "raw_cosine_sim.png" 1733007900.51536 29494 a98cc3c364da534c563cd76eb1f28728 ""
   (generated)
   "main.aux"

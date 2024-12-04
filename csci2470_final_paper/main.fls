@@ -124,6 +124,7 @@ INPUT ./raw_cosine_sim.png
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/public/cm/cmtt10.tfm
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/public/cm/cmbx12.tfm
+INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/public/cm/cmbxti10.tfm
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/jknappen/ec/tcrm1000.tfm
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT /nix/store/26mc5y0afwh69051vy2slygchjnphc0y-texlive-combined-full-2023-final-texmfdist/fonts/tfm/public/cm/cmbxti10.tfm

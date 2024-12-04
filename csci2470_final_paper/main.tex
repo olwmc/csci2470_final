@@ -103,7 +103,8 @@ Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a featu
 \subsection{Architecture}
 Our model looks like (FIGURE). We do autoencoder pretraining stuff. Sentence-BERT style SNLI pretraining did improve performance over baseline but not better than the standard autoencoders.
 
-% In the typical bias-variance decomposition of mean squared error (MSE) we treat the bias and variance of the residuals as meaningfully important features to minimize. In semantic text similarity, though, it wasn't clear to us that the \text{bias of the residuals should be centered on zero}. This reasoning is twofold. First, STS is a correlative task, so wasting training time and parameters on centering the distribution might harm generalization. Second, consider the distribution of similarity scores in STSB (SEE FIGURE !!) and notice that it is highly unnatural when compared to pairs of random sentences. 
+\subsubsection{Architectures that did \textit{not} work}
+
 
 \subsection{Loss function}
 Our loss function for supervised STS training departs from the traditional mean squared-error (MSE) in that we only try and minimize the \text{variance of the residuals}, instead of the traditional variance \text{and} bias which are both minimized when using MSE.
@@ -117,7 +118,10 @@ Our loss function for supervised STS training departs from the traditional mean 
 
 \section{Results}
 \subsection{Requirements for success}
-Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|65%| spearman correlation. We felt this was a reasonable target to hit given that 
+Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal
+
+\subsection{Final Results}
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|.
 % Results: What constitutes “success?”
 %     What experiments did you run?
 %     For most of our assignments, we have looked at the accuracy of the model. Does the notion of “accuracy” apply for your project, or is some other metric more appropriate?
