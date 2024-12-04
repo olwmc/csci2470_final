@@ -1,0 +1,124 @@
+@article{STS,
+  author       = {Daniel M. Cer and
+                  Mona T. Diab and
+                  Eneko Agirre and
+                  I{\~{n}}igo Lopez{-}Gazpio and
+                  Lucia Specia},
+  title        = {SemEval-2017 Task 1: Semantic Textual Similarity - Multilingual and
+                  Cross-lingual Focused Evaluation},
+  journal      = {CoRR},
+  volume       = {abs/1708.00055},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1708.00055},
+  eprinttype    = {arXiv},
+  eprint       = {1708.00055},
+  timestamp    = {Mon, 13 Aug 2018 16:45:59 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-1708-00055.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+ @article{LLM2Vec, title={LLM2Vec: Large Language Models Are Secretly Powerful Text Encoders}, url={http://arxiv.org/abs/2404.05961}, abstractNote={Large decoder-only language models (LLMs) are the state-of-the-art models on most of today’s NLP tasks and benchmarks. Yet, the community is only slowly adopting these models for text embedding tasks, which require rich contextualized representations. In this work, we introduce LLM2Vec, a simple unsupervised approach that can transform any decoder-only LLM into a strong text encoder. LLM2Vec consists of three simple steps: 1) enabling bidirectional attention, 2) masked next token prediction, and 3) unsupervised contrastive learning. We demonstrate the effectiveness of LLM2Vec by applying it to 4 popular LLMs ranging from 1.3B to 8B parameters and evaluate the transformed models on English word- and sequence-level tasks. We outperform encoder-only models by a large margin on word-level tasks and reach a new unsupervised state-of-the-art performance on the Massive Text Embeddings Benchmark (MTEB). Moreover, when combining LLM2Vec with supervised contrastive learning, we achieve state-of-the-art performance on MTEB among models that train only on publicly available data (as of May 24, 2024). Our strong empirical results and extensive analysis demonstrate that LLMs can be effectively transformed into universal text encoders in a parameter-efficient manner without the need for expensive adaptation or synthetic GPT-4 generated data.}, note={arXiv:2404.05961 [cs]}, number={arXiv:2404.05961}, publisher={arXiv}, author={BehnamGhader, Parishad and Adlakha, Vaibhav and Mosbach, Marius and Bahdanau, Dzmitry and Chapados, Nicolas and Reddy, Siva}, year={2024}, month=aug, language={en} }
+
+ @article{NVEmbed, title={NV-Embed: Improved Techniques for Training LLMs as Generalist Embedding Models}, url={http://arxiv.org/abs/2405.17428}, DOI={10.48550/arXiv.2405.17428}, abstractNote={Decoder-only large language model (LLM)-based embedding models are beginning to outperform BERT or T5-based embedding models in general-purpose text embedding tasks, including dense vector-based retrieval. In this work, we introduce the NV-Embed model with a variety of architectural designs and training procedures to significantly enhance the performance of LLM as a versatile embedding model, while maintaining its simplicity and reproducibility. For model architecture, we propose a latent attention layer to obtain pooled embeddings, which consistently improves retrieval and downstream task accuracy compared to mean pooling or using the last <EOS> token embedding from LLMs. To enhance representation learning, we remove the causal attention mask of LLMs during contrastive training. For model training, we introduce a two-stage contrastive instruction-tuning method. It first applies contrastive training with instructions on retrieval datasets, utilizing in-batch negatives and curated hard negative examples. At stage-2, it blends various non-retrieval datasets into instruction tuning, which not only enhances non-retrieval task accuracy but also improves retrieval performance. Combining these techniques, our NV-Embed model, using only publicly available data, has achieved a record-high score of 69.32, ranking No. 1 on the Massive Text Embedding Benchmark (MTEB) (as of May 24, 2024), with 56 tasks, encompassing retrieval, reranking, classification, clustering, and semantic textual similarity tasks. Notably, our model also attains the highest score of 59.36 on 15 retrieval tasks in the MTEB benchmark (also known as BEIR). We will open-source the model at: https://huggingface.co/nvidia/NV-Embed-v1.}, note={arXiv:2405.17428}, number={arXiv:2405.17428}, publisher={arXiv}, author={Lee, Chankyu and Roy, Rajarshi and Xu, Mengyao and Raiman, Jonathan and Shoeybi, Mohammad and Catanzaro, Bryan and Ping, Wei}, year={2024}, month=may }
+
+ @article{RepImprovesLLM, title={Repetition Improves Language Model Embeddings}, url={http://arxiv.org/abs/2402.15449}, DOI={10.48550/arXiv.2402.15449}, abstractNote={Recent approaches to improving the extraction of text embeddings from autoregressive large language models (LLMs) have largely focused on improvements to data, backbone pretrained language models, or improving task-differentiation via instructions. In this work, we address an architectural limitation of autoregressive models: token embeddings cannot contain information from tokens that appear later in the input. To address this limitation, we propose a simple approach, “echo embeddings,” in which we repeat the input twice in context and extract embeddings from the second occurrence. We show that echo embeddings of early tokens can encode information about later tokens, allowing us to maximally leverage high-quality LLMs for embeddings. On the MTEB leaderboard, echo embeddings improve over classical embeddings by over 9% zero-shot and by around 0.7% when fine-tuned. Echo embeddings with a Mistral-7B model achieve state-of-the-art compared to prior open source models that do not leverage synthetic fine-tuning data.}, note={arXiv:2402.15449}, number={arXiv:2402.15449}, publisher={arXiv}, author={Springer, Jacob Mitchell and Kotha, Suhas and Fried, Daniel and Neubig, Graham and Raghunathan, Aditi}, year={2024}, month=feb }
+
+ @article{LLMEmbed, title={Improving Text Embeddings with Large Language Models}, url={http://arxiv.org/abs/2401.00368}, DOI={10.48550/arXiv.2401.00368}, abstractNote={In this paper, we introduce a novel and simple method for obtaining high-quality text embeddings using only synthetic data and less than 1k training steps. Unlike existing methods that often depend on multi-stage intermediate pre-training with billions of weakly-supervised text pairs, followed by fine-tuning with a few labeled datasets, our method does not require building complex training pipelines or relying on manually collected datasets that are often constrained by task diversity and language coverage. We leverage proprietary LLMs to generate diverse synthetic data for hundreds of thousands of text embedding tasks across 93 languages. We then fine-tune open-source decoder-only LLMs on the synthetic data using standard contrastive loss. Experiments demonstrate that our method achieves strong performance on highly competitive text embedding benchmarks without using any labeled data. Furthermore, when fine-tuned with a mixture of synthetic and labeled data, our model sets new state-of-the-art results on the BEIR and MTEB benchmarks.}, note={arXiv:2401.00368}, number={arXiv:2401.00368}, publisher={arXiv}, author={Wang, Liang and Yang, Nan and Huang, Xiaolong and Yang, Linjun and Majumder, Rangan and Wei, Furu}, year={2024}, month=may }
+
+@misc{tang2024poolingattentioneffectivedesigns,
+      title={Pooling And Attention: What Are Effective Designs For LLM-Based Embedding Models?}, 
+      author={Yixuan Tang and Yi Yang},
+      year={2024},
+      eprint={2409.02727},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2409.02727}, 
+}
+
+@misc{hu2021loralowrankadaptationlarge,
+      title={LoRA: Low-Rank Adaptation of Large Language Models}, 
+      author={Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+      year={2021},
+      eprint={2106.09685},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2106.09685}, 
+}
+
+@misc{gpt2malware,
+      title={Harnessing GPT-2 for Feature Extraction in Malware Detection: A Novel Approach to Cybersecurity}, 
+      author={Mahmoud Basharat and Marwan Omar},
+      year={2024},
+      url={https://sciendo.com/fr/article/10.2478/raft-2024-0}, 
+}
+
+@article{muennighoff2022mteb,
+    doi = {10.48550/ARXIV.2210.07316},
+    url = {https://arxiv.org/abs/2210.07316},
+    author = {Muennighoff, Niklas and Tazi, Nouamane and Magne, Lo{\"\i}c and Reimers, Nils},
+    title = {MTEB: Massive Text Embedding Benchmark},
+    publisher = {arXiv},
+    journal={arXiv preprint arXiv:2210.07316},  
+    year = {2022}
+}
+
+@misc{bhakthavatsalam2020genericskbknowledgebasegeneric,
+      title={GenericsKB: A Knowledge Base of Generic Statements}, 
+      author={Sumithra Bhakthavatsalam and Chloe Anastasiades and Peter Clark},
+      year={2020},
+      eprint={2005.00660},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2005.00660}, 
+}
+
+@misc{reimers2019sentencebertsentenceembeddingsusing,
+      title={Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks}, 
+      author={Nils Reimers and Iryna Gurevych},
+      year={2019},
+      eprint={1908.10084},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/1908.10084}, 
+}
+@misc{resid-norm-grows,
+      title={Residual stream norms grow exponentially over the forward pass}, 
+      author={Stefan Heimersheim and Alex Turner},
+      year={2023},
+      url={https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-norms-grow-exponentially-over-the-forward}, 
+}
+
+@article{bricken2023monosemanticity,
+   title={Towards Monosemanticity: Decomposing Language Models With Dictionary Learning},
+   author={Bricken, Trenton and Templeton, Adly and Batson, Joshua and Chen, Brian and Jermyn, Adam and Conerly, Tom and Turner, Nick and Anil, Cem and Denison, Carson and Askell, Amanda and Lasenby, Robert and Wu, Yifan and Kravec, Shauna and Schiefer, Nicholas and Maxwell, Tim and Joseph, Nicholas and Hatfield-Dodds, Zac and Tamkin, Alex and Nguyen, Karina and McLean, Brayden and Burke, Josiah E and Hume, Tristan and Carter, Shan and Henighan, Tom and Olah, Christopher},
+   year={2023},
+   journal={Transformer Circuits Thread},
+   note={https://transformer-circuits.pub/2023/monosemantic-features/index.html}
+}
+
+@misc{bolukbasi2016mancomputerprogrammerwoman,
+      title={Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings}, 
+      author={Tolga Bolukbasi and Kai-Wei Chang and James Zou and Venkatesh Saligrama and Adam Kalai},
+      year={2016},
+      eprint={1607.06520},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/1607.06520}, 
+}
+
+@misc{lu2021pretrainedtransformersuniversalcomputation,
+      title={Pretrained Transformers as Universal Computation Engines}, 
+      author={Kevin Lu and Aditya Grover and Pieter Abbeel and Igor Mordatch},
+      year={2021},
+      eprint={2103.05247},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2103.05247}
+}
+
+@inproceedings{snli,
+    author = {Bowman, Samuel R. and Angeli, Gabor and Potts, Christopher and Manning, Christopher D.},
+    title = {A large annotated corpus for learning natural language inference},
+    booktitle = {Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+    publisher = {Association for Computational Linguistics},
+    year = {2015}
+}

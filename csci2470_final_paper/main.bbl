@@ -1,0 +1,33 @@
+\begin{thebibliography}{1}
+
+\bibitem{gpt2malware}
+Mahmoud Basharat and Marwan Omar.
+\newblock Harnessing gpt-2 for feature extraction in malware detection: A novel approach to cybersecurity, 2024.
+
+\bibitem{bhakthavatsalam2020genericskbknowledgebasegeneric}
+Sumithra Bhakthavatsalam, Chloe Anastasiades, and Peter Clark.
+\newblock Genericskb: A knowledge base of generic statements, 2020.
+
+\bibitem{snli}
+Samuel~R. Bowman, Gabor Angeli, Christopher Potts, and Christopher~D. Manning.
+\newblock A large annotated corpus for learning natural language inference.
+\newblock In {\em Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing (EMNLP)}. Association for Computational Linguistics, 2015.
+
+\bibitem{STS}
+Daniel~M. Cer, Mona~T. Diab, Eneko Agirre, I{\~{n}}igo Lopez{-}Gazpio, and Lucia Specia.
+\newblock Semeval-2017 task 1: Semantic textual similarity - multilingual and cross-lingual focused evaluation.
+\newblock {\em CoRR}, abs/1708.00055, 2017.
+
+\bibitem{hu2021loralowrankadaptationlarge}
+Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu~Wang, and Weizhu Chen.
+\newblock Lora: Low-rank adaptation of large language models, 2021.
+
+\bibitem{lu2021pretrainedtransformersuniversalcomputation}
+Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch.
+\newblock Pretrained transformers as universal computation engines, 2021.
+
+\bibitem{tang2024poolingattentioneffectivedesigns}
+Yixuan Tang and Yi~Yang.
+\newblock Pooling and attention: What are effective designs for llm-based embedding models?, 2024.
+
+\end{thebibliography}
