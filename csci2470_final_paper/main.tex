@@ -59,8 +59,9 @@ We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for s
 Reusing pretrained LLMs for semantic tasks like STS is nothing new. There is extensive literature about finetuning and retraining
 these models for a variety of new tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, \cite{tang2024poolingattentioneffectivedesigns}. Moreover using decoder-only models for embedding tasks is common, with works like
 SGPT \cite{muennighoff2022sgptgptsentenceembeddings}, LLM2VEC \cite{LLM2Vec}, LLMEmbed \cite{LLMEmbed} etc. exploring this idea as well as "meta-techniques" for improving these embeddings like Mitchell et. al's paper on how repeating a given piece of text within a prompt improves downstream benchmark performance after collecting a truncated subset of the generated latents \cite{RepImprovesLLM}. It is also well known that GPT-2 produces incredibly low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} and even basic exploration shows that the smaller \verb|gpt2-medium| produces very low quality text generation.
-Our work takes inspiration from adapter models but we leverage a key differnce -- Our approach takes advantage of the fact that different layers encode meaningfully different information and we treat them as independent sources of information. This is in contrast to adapter models which simply modify the existing network but keep the same flow of information.
-There is also some emerging work on using the embeddings of larger models like GPT-3 https://arxiv.org/pdf/2312.15068 but they rely on specially trained text embedding models that are based on GPT-3.
+Our work also takes inspiration from other parameter-efficient finetuning methods
+
+% Our work takes inspiration from adapter models but we leverage a key differnce -- Our approach takes advantage of the fact that different layers encode meaningfully different information and we treat them as independent sources of information. This is in contrast to adapter models which simply modify the existing network but keep the same flow of information. Moreover, adapter models are constrained by needing to create a single representation that conforms to the existing model's "hardware", so to speak. Our approach is completely free to develop whatever representation is needed to extract relevant information.
 
 \begin{figure}[!htb]
     \centering
@@ -106,7 +107,8 @@ Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a featu
 % Methodology: What is the architecture of your model?
 %     How are you training the model?
 %     Justify your design. Also note some things you tried that may or may not have worked.
-The key insight that we employ here is that different layers in transformer models encode meaningfully different information that is likely later dropped in favor of other information more useful to text prediction (You can imagine collecting "pieces" of context until you find out what you actually "need", in which you drop the previous pieces). Our strategy was to leverage these different representational spaces to generate more complete representations.
+The key insight behind our approach is that different layers in transformer models encode distinct types of information, with each layer potentially discarding or transforming information from previous layers as it builds towards its final objective. Rather than assuming later layers contain all necessary information, we hypothesized that earlier layers might preserve valuable semantic features that get filtered out during the progression through the model. While this is similar in concept to adapter models (CITE ME), our approach has a key advantage: since we're not constrained by the need to maintain the original model's information flow, we can treat each layer's representational space as fully independent. This allows us to potentially capture and utilize semantic features that might otherwise be lost or transformed as information propagates through the model's layers.
+
 \subsection{Training and Loss function} \label{Loss} \label{Training}
 Our general training scheme was the following:
 \begin{enumerate}
