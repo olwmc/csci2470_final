@@ -165,3 +165,9 @@ cython_debug/
 .vs/
 vault/.obsidian
 *.pt
+
+main.aux
+main.fdb_latexmk
+main.fls
+main.synctex.gz
+main.toc
