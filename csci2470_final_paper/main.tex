@@ -31,6 +31,9 @@
 % Title: Summarizes the main idea of your project.
 % Who: Names and logins of all your group members.
 
+\begin{abstract}
+    We investigate whether frozen language models can be used effectively as feature extractors for semantic tasks without any fine-tuning. Our approach takes the intermediate activations of GPT2-medium and treats them as independent sources of semantic information, processing them through a combination of autoencoder pretraining and siamese networks. Despite GPT2-medium's known limitations in generating quality embeddings, we achieve \verb|76.86%| Pearson correlation on the STSB benchmark without touching the base model's weights. Interestingly, we found that widening the bottleneck of our autoencoders at later layers significantly improved performance, suggesting these layers encode richer semantic information that requires more representational capacity to capture. Our analysis of model errors revealed cases where predictions diverged notably from human ratings, raising deeper questions about the nature of semantic similarity itself. While not state-of-the-art, our results demonstrate that frozen LLM representations contain substantial semantic information that can be extracted efficiently, offering a lightweight alternative to traditional fine-tuning approaches.
+\end{abstract}
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
 \tableofcontents
@@ -207,7 +210,7 @@ Although our original motivation was in the vein of interpretability, our approa
     \item A similarity measure for \verb|gpt2-medium|'s activations that aligns with human judgments of semantic similarity, potentially offering more interpretable insights into the model's representations
     \item A representation learning scheme for LLM activations that preserves the base model's weights and information flow while enabling task-specific adaptation
 \end{itemize}
-While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts.
+While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts. In future work we aim to see how far these individual components can be improved.
 
 \subsection{Representational Ceiling}
 We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aformentioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different represenations (and thus contextual information) of the input to perform well at.
