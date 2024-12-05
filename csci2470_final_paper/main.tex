@@ -200,6 +200,15 @@ Which STSB has rated at a similarity of \verb|0%|. Our model is less conservativ
 
 This raises deeper questions about the nature of semantic similarity itself. Two humans, given different contexts or purposes (e.g., legal analysis vs. historical study), might rate these sentences quite differently. Our model's architecture, processing information across multiple transformer layers, may naturally capture these various levels of similarity -- from surface-level linguistics to broader themes. This observation, supported by our finding that wider bottlenecks in later layers improved performance, suggests that our model's "errors" might actually be revealing limitations in how we define and measure semantic similarity, rather than just limitations in the model itself. Of course this does not distract from the fact that our model is nowhere near state of the art, but it is a worthwhile question to ask either way. Clearly our training produced \textit{a particular interpretation of semantic similarity}, but which was it? Excluding clear errors, of course. We offer more insight into this in Section \ref{error analysis}.
 
+\subsection{What did we actually create?}
+Although our original motivation was in the vein of interpretability, our approach combines several potentially useful components:
+\begin{itemize}
+    \item A distinct, layerwise-independent parameter-efficient approach to adapting existing LLMs to sentence similarity without fine-tuning
+    \item A similarity measure for \verb|gpt2-medium|'s activations that aligns with human judgments of semantic similarity, potentially offering more interpretable insights into the model's representations
+    \item A representation learning scheme for LLM activations that preserves the base model's weights and information flow while enabling task-specific adaptation
+\end{itemize}
+While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts.
+
 \subsection{Representational Ceiling}
 We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aformentioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different represenations (and thus contextual information) of the input to perform well at.
 
