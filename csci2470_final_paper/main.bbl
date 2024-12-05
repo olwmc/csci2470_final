@@ -4,6 +4,12 @@
 Mahmoud Basharat and Marwan Omar.
 \newblock Harnessing gpt-2 for feature extraction in malware detection: A novel approach to cybersecurity, 2024.
 
+\bibitem{LLM2Vec}
+Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau, Nicolas Chapados, and Siva Reddy.
+\newblock Llm2vec: Large language models are secretly powerful text encoders.
+\newblock (arXiv:2404.05961), August 2024.
+\newblock arXiv:2404.05961 [cs].
+
 \bibitem{bhakthavatsalam2020genericskbknowledgebasegeneric}
 Sumithra Bhakthavatsalam, Chloe Anastasiades, and Peter Clark.
 \newblock Genericskb: A knowledge base of generic statements, 2020.
@@ -34,6 +40,12 @@ Niklas Muennighoff, Nouamane Tazi, Lo{\"\i}c Magne, and Nils Reimers.
 \bibitem{reimers2019sentencebertsentenceembeddingsusing}
 Nils Reimers and Iryna Gurevych.
 \newblock Sentence-bert: Sentence embeddings using siamese bert-networks, 2019.
+
+\bibitem{RepImprovesLLM}
+Jacob~Mitchell Springer, Suhas Kotha, Daniel Fried, Graham Neubig, and Aditi Raghunathan.
+\newblock Repetition improves language model embeddings.
+\newblock (arXiv:2402.15449), February 2024.
+\newblock arXiv:2402.15449.
 
 \bibitem{tang2024poolingattentioneffectivedesigns}
 Yixuan Tang and Yi~Yang.

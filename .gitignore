@@ -171,4 +171,5 @@ main.fdb_latexmk
 main.fls
 main.synctex.gz
 main.toc
-main.pdf
+main.bbl
+main.blg
