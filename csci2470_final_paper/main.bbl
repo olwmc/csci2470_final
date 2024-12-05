@@ -24,6 +24,10 @@ Daniel~M. Cer, Mona~T. Diab, Eneko Agirre, I{\~{n}}igo Lopez{-}Gazpio, and Lucia
 \newblock Semeval-2017 task 1: Semantic textual similarity - multilingual and cross-lingual focused evaluation.
 \newblock {\em CoRR}, abs/1708.00055, 2017.
 
+\bibitem{ethayarajh2019contextualcontextualizedwordrepresentations}
+Kawin Ethayarajh.
+\newblock How contextual are contextualized word representations? comparing the geometry of bert, elmo, and gpt-2 embeddings, 2019.
+
 \bibitem{hu2021loralowrankadaptationlarge}
 Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu~Wang, and Weizhu Chen.
 \newblock Lora: Low-rank adaptation of large language models, 2021.
@@ -31,6 +35,10 @@ Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean W
 \bibitem{lu2021pretrainedtransformersuniversalcomputation}
 Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch.
 \newblock Pretrained transformers as universal computation engines, 2021.
+
+\bibitem{muennighoff2022sgptgptsentenceembeddings}
+Niklas Muennighoff.
+\newblock Sgpt: Gpt sentence embeddings for semantic search, 2022.
 
 \bibitem{muennighoff2022mteb}
 Niklas Muennighoff, Nouamane Tazi, Lo{\"\i}c Magne, and Nils Reimers.
