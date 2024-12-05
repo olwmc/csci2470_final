@@ -1,4 +1,4 @@
-\documentclass[14pt]{article}
+\documentclass[14pt, twocolumn]{article}
 \usepackage[margin=0.5in]{geometry} 
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{graphicx}
@@ -31,9 +31,9 @@
 % Title: Summarizes the main idea of your project.
 % Who: Names and logins of all your group members.
 
-% \setcounter{tocdepth}{4}
-% \setcounter{secnumdepth}{4}
-% \tableofcontents
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+\tableofcontents
 \newpage
 
 \section{Introduction}
@@ -46,24 +46,25 @@ We chose this idea for several reasons.
     \item Our original motivational question was: \textit{"Do ‘similar’ prompts (to human readers) have ‘similar’ (under some metric) representations to a given language model?"}. By training a sentence-similarity model on LLM activations, we believed we could make progress on answering this question by \textit{learning} a transformation of the activations that correlates to semantic similarity.
 
     \item \textit{If} we could train a small model to interpret a given LLM's activations and produce a useful text embedding (or set of embeddings) from them, we could skip costly fine-tuning and simply pre-train and fine-tune the small "interpreter" model. Pretrained small LLMs are cheap to do forward passes on and very plentiful, so if we could \textit{just} use the intermediate activations and not have to do backward passes we could get a lot of functionality for very little compute.
-
+    
     \item We also wanted to investigate the question: \textit{Do multiple intermediate activations perform better than just the last?} Typically when doing finetuning or transfer learning you remove the classifier end and use the last intermediate representation as your "feature extracted representation". We wanted to see if there was any performance benefit in using \textit{multiple layer's} worth of representation. This is clearly the case in the finetuning setting \cite{tang2024poolingattentioneffectivedesigns} but it's unclear if it will work here.
-
+    
     \item From an interpretability standpoint, most distance or similarity measures (E.g cosine similarity) do not correlate strongly with \textit{human ideas} of similarity (Figure \ref{fig:raw-corr}). By training a similarity learner on LLM activations, grounded in human ideas of similarity, we hoped to produce a more interpretable measure of similarity for LLM activations.
     
     \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. \footnote{There was only one paper we could find doing a similar setup -- extracing latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}. There are many papers \textit{like} this one (\cite{lu2021pretrainedtransformersuniversalcomputation} comes to mind) but almost none completely freeze the entire model and "start from scratch" as we did here.} We're not really interested in \textit{what} information is \text{where}, we just want to see \textit{if it's useable} for a simple task like STS.
-
+    
 \end{enumerate}
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=0.57\linewidth]{raw_cosine_sim.png}
-    \caption{\textbf{The problem we are ultimately trying to solve}. Layerwise average correlation between gpt2-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
-    \label{fig:raw-corr}
-\end{figure}
 We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for study because Oliver was familiar with its architecture and it readily fit onto all of our GPUs. We also did minor experiments on \verb|qwen2-0.5B| (391M parameters). Moreover we chose \verb|gpt2-medium| because of its very low quality text generation ability. It was not at all a priori obvious to us that its representations would be fit for this task.
 
-\subsection{Problem Setup}
-Figure \ref{fig:raw-corr} depcits our "starting point". This figure depicts the correlation between two important quantities for our investigation:
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=1\linewidth]{raw_cosine_sim.png}
+    \caption{\textbf{The problem we are ultimately trying to solve}. Layerwise average correlation between gpt1-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
+    \label{fig:raw-corr}
+\end{figure}
+
+\subsection{Problem Setup} \label{Setup}
+Figure \ref{fig:raw-corr} was our "starting point". This figure depicts the correlation between two important quantities for our investigation:
 \begin{enumerate}
     \item The cosine similarity of two sentences' latent representations (See \ref{latent} for more information on this representation)
     \item A human rated similarity score for those same two sentences (See \ref{STS-section})
@@ -73,6 +74,10 @@ For each layer we computed the mean correlation between these two quantities for
 \section{Related Work}
 % Related Work: Are you aware of any, or is there any prior work that you drew on to do your project?
 %     Please read and briefly summarize (no more than one paragraph) at least one paper/article/blog relevant to your project.
+Reusing pretrained LLMs for semantic tasks like STS is nothing new. There is extensive literature about finetuning and retraining
+these models for a variety of new tasks (CITE ME). Moreover using decoder-only models for embedding tasks is common, with works like
+SGPT (CITE ME), LLM2VEC, etc.\\\\
+It is well known that GPT-2 produces incredibly low quality embeddings (CITE ME. https://arxiv.org/pdf/1909.00512)
 
 \section{Data}
 We have three major datasets that we used for both pretraining and supervised STS training.
@@ -100,14 +105,37 @@ Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a featu
 % Methodology: What is the architecture of your model?
 %     How are you training the model?
 %     Justify your design. Also note some things you tried that may or may not have worked.
-\subsection{Architecture}
-Our model looks like (FIGURE). We do autoencoder pretraining stuff. Sentence-BERT style SNLI pretraining did improve performance over baseline but not better than the standard autoencoders.
-
-\subsubsection{Architectures that did \textit{not} work}
-
-
-\subsection{Loss function}
+\subsection{Training and Loss function} \label{Loss} \label{Training}
+Our general training scheme was the following:
+\begin{enumerate}
+    \item Pass whatever example sentence for the current task through \verb|gpt2-medium|
+    \item Extract the latents (Described in Section \ref{latent}) from each layer. We take these latents and completely decouple them from the base model. They are effectively just a set of vector representations of the input. No gradient is passed back through \verb|gpt2-medium|
+    \item Pass those latents into our model.
+\end{enumerate}
 Our loss function for supervised STS training departs from the traditional mean squared-error (MSE) in that we only try and minimize the \text{variance of the residuals}, instead of the traditional variance \text{and} bias which are both minimized when using MSE.
+
+\subsection{Architecture}
+Our architecture was decided through a series of experiments and trial and error. We tried to only make architectural decisions which were, in some way, \textit{principled} -- I.e. we had a decent reason for making that particular change.
+
+\subsection{First iteration}
+Our first architecture was incredibly simple -- Just take the layerwise cosine similarities described in Section \ref {Setup} and pass them through an MLP to do basic weighting and statistical correlation. We felt this was reasonable because although the individual correlations were quite weak, it wasn't clear to us that each layer was correlating \textit{to the same content}. In the same way that many weak models can be combined to create a strong one, we figured that a simple MLP would be able to decipher some of the more complicated relationships, even just through the layerwise similarities. This model was quite simple, just a one layer mlp that took the twenty-four layerwise cosine similarities from \verb|gpt2-medium|'s respective latents and outputted a sigmoided single scalar. This was trained using the scheme described in Section \ref{Training}. This model significantly improved upon baseline, giving us a test set pearson correlation of \verb|39.2%| and spearman of \verb|42.06%| ($p<< 0.001$)
+
+\subsection{Layerwise Siamese Networks}
+After the previous architectural experiment, we figured that we were probably bottlenecked by the representation of our base model, necessitating a transformation. Inspired by prior work on Siamese networks for semantic tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, we decided to modify our architecture by applying siamese networks to each layer, computing the cosine similarities of \text{those} representations, and then finally passing those cosine similarities into a weighting/pattern matching MLP as described above. The intuition here is that each layer probably contains meaningfully different and useful information, as evidence by weighted cosine doing better than any particular layer. So, if we learn a nonlinear transformation of each layer's particular space through supervised STS training, we might be able to extract a better representation for this task and have overall better downstream performance.\\\\
+This architecture achieved a \text{significant} performance increase, moving our pearson and spearman on the test set to \verb|71.63%| and \verb|69.72| ($p << 0.001$) respectively.
+
+\subsection{Autoencoder pretraining and the final model}
+We then realized that although this architecture was traning quite well, it was likely the case that inputs which were significantly different from those in the input distribution would likely not be well represented by our siamese networks. This then inspired us to change our training strategy. Our current strategy \text{coupled} our representation learning and our supervised STS learning. That is, the model had to both learn a good representation of the input whilst also learning how to orient examples spatially to reflect semantic similarity. We then decided to break this up by first training a set of layerwise autoencoders over twenty-thousand "generic" sentences from the GenericsKB \cite{bhakthavatsalam2020genericskbknowledgebasegeneric} dataset. These senteces were similar in length and complexity to the STS training set that we felt it was an appropriate 'pretraining' dataset. We trained the autoencoders to reconstruct each layer's latent for each sentence (I.e. twenty-four autoencoders, each trying to reconstruct their respective layer's latent). We then did this pretraining and took the encoder part of each autoencoder and treated it as our new siamese network. Each autoencoder had a bottleneck of $256$ hidden units.\\\\
+Immediately, our results were \textit{indistinguishable} from the results of the previous section. We then produced Figure (PUT FIGURE) and realized that the layerwise losses for each autoencoder increased exponentially as the layers went on. This inspired us to, among many other things, widen the bottleneck of the last twelve autoencoders from $256$ to $512$. This then finally showed a performance increase to \verb|75.36%| pearson and \verb|73.21%| spearman. Our final change was to incorperate the loss function switch described in Section \ref{Loss}, which brought us to a final pearson and spearman correlation of:
+\begin{align*}
+    &\text{Pearson} = 76.86\%\\
+    &\text{Spearman} = 75.03\%\;,\; p << 0.001
+\end{align*}
+Moreover, this architecture actually ended up with more than $600,000$ fewer parameters when compared to our previous best model.
+
+\subsection{Experiments that failed}
+
+
 % Our loss function has evolved significantly since the beginning. We plotted the distribution of our residuals and noticed
 % the spread could be tightened. Since this is a correlative task, we don't care about bias, just variance. So instead of doing MSE
 % we just optimize to minimize the variance of the residuals directly
