@@ -9,45 +9,45 @@ Warning--empty journal in RepImprovesLLM
 Warning--there's a number but no volume in RepImprovesLLM
 Warning--empty journal in LLMEmbed
 Warning--there's a number but no volume in LLMEmbed
-You've used 13 entries,
+You've used 14 entries,
             2118 wiz_defined-function locations,
-            557 strings with 6502 characters,
-and the built_in function-call counts, 4097 in all, are:
-= -- 346
-> -- 312
+            561 strings with 6712 characters,
+and the built_in function-call counts, 4423 in all, are:
+= -- 372
+> -- 340
 < -- 0
-+ -- 124
-- -- 110
-* -- 293
-:= -- 731
-add.period$ -- 36
-call.type$ -- 13
-change.case$ -- 94
++ -- 135
+- -- 120
+* -- 316
+:= -- 787
+add.period$ -- 38
+call.type$ -- 14
+change.case$ -- 102
 chr.to.int$ -- 0
-cite$ -- 19
-duplicate$ -- 113
-empty$ -- 271
-format.name$ -- 110
-if$ -- 806
+cite$ -- 20
+duplicate$ -- 120
+empty$ -- 293
+format.name$ -- 120
+if$ -- 871
 int.to.chr$ -- 0
-int.to.str$ -- 13
+int.to.str$ -- 14
 missing$ -- 6
-newline$ -- 64
-num.names$ -- 26
-pop$ -- 130
+newline$ -- 68
+num.names$ -- 28
+pop$ -- 143
 preamble$ -- 1
-purify$ -- 81
+purify$ -- 88
 quote$ -- 0
-skip$ -- 96
+skip$ -- 104
 stack$ -- 0
-substring$ -- 66
-swap$ -- 11
+substring$ -- 71
+swap$ -- 12
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 52
+type$ -- 56
 warning$ -- 6
-while$ -- 26
-width$ -- 15
-write$ -- 126
+while$ -- 28
+width$ -- 16
+write$ -- 134
 (There were 6 warnings)

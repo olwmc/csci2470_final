@@ -11,6 +11,11 @@ Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau,
 Sumithra Bhakthavatsalam, Chloe Anastasiades, and Peter Clark.
 \newblock Genericskb: A knowledge base of generic statements, 2020.
 
+\bibitem{bolukbasi2016mancomputerprogrammerwoman}
+Tolga Bolukbasi, Kai-Wei Chang, James Zou, Venkatesh Saligrama, and Adam Kalai.
+\newblock Man is to computer programmer as woman is to homemaker? debiasing
+  word embeddings, 2016.
+
 \bibitem{snli}
 Samuel~R. Bowman, Gabor Angeli, Christopher Potts, and Christopher~D. Manning.
 \newblock A large annotated corpus for learning natural language inference.

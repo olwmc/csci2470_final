@@ -174,9 +174,12 @@ We ran several hyperparameter optimization/search runs on the autoencoders chang
 Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing} pretrained its siamese networks on the SNLI \cite{snli} relation task to great benefit. We tried this with our layerwise approach and found success in the SNLI task but no downstream benefits for STS.
 
 \paragraph*{Pooling and attention mechanisms}
-We tried several schemes for pooling or otherwise combining both the latent representations coming from \verb|gpt2-medium| and our learned representations. One pooling strategy we tried in the hopes of creating a single unified embedding was modifying the autoencoder training to instead of having twenty-four individual vectors to decode, we simply up-projected each encoder's output and summed accross each layer. This gave us a single high dimensional vector which we then fed into each "decoder", which was was trained to reconstruct the original layer's embedding from the unified one. The idea was that the unified representation would be encouraged to reuse subspaces to carry each layer's individual information so that it could be appropriately decoded. This representation performed worse than our best model with a Pearson correlation of roughly \verb|60%|. We do believe, though, that this scheme is probably the way forward if we want to expand to other tasks.
+We tried several schemes for pooling or otherwise combining both the latent representations coming from \verb|gpt2-medium| and our learned representations. One pooling strategy we tried (Inspired by the 'semantic subspaces' idea of Bolukbasi et. al \cite{bolukbasi2016mancomputerprogrammerwoman}) in the hopes of creating a single unified embedding was modifying the autoencoder training to instead of having twenty-four individual vectors to decode, we simply up-projected each encoder's bottlenecked output and summed accross each layer. This gave us a single high dimensional vector which we then fed into each "decoder", which was was trained to reconstruct the original layer's embedding from the unified one. The idea was that the unified representation would be encouraged to reuse subspaces to carry each layer's individual information so that it could be appropriately decoded. This model performed worse than our best model with a Pearson correlation of roughly \verb|60%|. We do believe, though, that this scheme is probably the way forward if we want to expand to other tasks.
 
 We also experimented with some of the attention and attention pooling strategies outlined in Tang et. al \cite{tang2024poolingattentioneffectivedesigns}. This did not do well when pooling either the original latents, nor the learned autoencoded representations.
+
+\paragraph*{Fake Data}
+At one point we were wondering if we just simply didn't have enough examples of semantically similar sentences to break our best score, so we tried a few data generation strategies to see if we could mitigate this problem. Most notably we tried adding a little bit of noise to the activations to see if the model would generalize better -- It didn't. We also tried modifying the prompts to change words or capitalization (To see if the difference in tokenization would change anything) -- It didn't.
 
 % Our loss function has evolved significantly since the beginning. We plotted the distribution of our residuals and noticed
 % the spread could be tightened. Since this is a correlative task, we don't care about bias, just variance. So instead of doing MSE
@@ -269,16 +272,16 @@ We're very happy with how this project turned out. There were a couple of scares
 
 At the start of this project we made a pact to try and be principled with each decision that came our way. For example, we made it a rule to never just make a model deeper or wider for no reason. We tried to stay as minimal as possible throughout the whole project and we feel that paid off. We believe that every decision in our architectural design process (Mostly described in Section \ref{Architecture}) had good and clear motivation. We're also incredibly proud of our experimentation and overall scientific process.
 
-If we had more time we would definitely choose to try and make our model a more general embedding model (Likely though some kind of pooling mechanism) and work towards applying it to the Massive Text Embedding Benchmark \cite{muennighoff2022mteb}. We have some other experiments that we briefly described in the section on architecture that we believe are the way forward in terms of overall performance, we just think they would take significant time and research effort to prove fruitful.
+If we had more time we would definitely choose to try and make our model a more general embedding model (Likely though some kind of pooling mechanism) and work towards applying it to the Massive Text Embedding Benchmark \cite{muennighoff2022mteb}. We have some other experiments that we briefly described in the section on architecture that we believe are the way forward in terms of overall performance, we just think they would take significant time and research effort to prove fruitful. Finally, we would do more thorough model comparisons (I.e. full-scale finetuning \verb|gpt2-medium| to the task, using our architecture with different base models) so we have a clearer picture of how our architecture stacks up against other choices. There aren't many models on the MTEB or STSB leaderboards that are similar to ours, so it's hard to get perspective. Even parameter count isn't necessarily a good measure of how close we are because the vast majority of our "parameters" are not trained.
 
 Our biggest takeway by far from doing this project is that research is an incredibly fun and collaborative process. We all thoroughly enjoyed all the exploration, reading, experimentation, and rebuilding our mental models over and over to try and make good decisions. As for what we learned, we all believe we made significant progress in our understanding and ability in, among other things, training and debugging neural networks, transformer models, metric and similarity learning, reading and consuming research papers, scientific writing, and collaborative research.
 
 \section{Division of Labor}
 % Division of labor: Briefly outline who will be responsible for which part(s) of the project.
 \begin{itemize}
-    \item \textit{Hayden.}
-    \item \textit{Nick.} 
-    \item \textit{Oliver.} 
+    \item \textit{Oliver.}  Lead the research effort and designed and implemented the major architectural experiments. Took on most of the report writing.
+    \item \textit{Hayden.} Lead the analysis effort and discovered the bottleneck in the autoencoders. Performed the first manual hyperparameter experiments and investigated intermediate correlations that helped improve our understanding of the model.
+    \item \textit{Nick.}  Lead the automated hyperparameter optimization effort and proposed alternate approaches for improving our score. Performed a significant portion of the literature review and collected techniques and paths we could take.
 \end{itemize}
 
 \newpage
@@ -322,7 +325,7 @@ Which shows that the model has \textit{not learned to recognize completely ident
 
 \newpage
 \section{Appendix: \textit{STSB} dataset leakage} 
-While working on our analysis we noticed that the some of the individuals in some of the test pairs of the STSB dataset were also present in the training set. Except for one instance, they were all paired with different sentences than in the test set. We wanted to see if this was meaningful leakge so we ran a boostrap blah blah z score blah blah
+While working on our analysis we noticed that the some of the individuals in some of the test pairs of the STSB dataset were also present in the training set. Except for one instance, they were all paired with different sentences than in the test set. We wanted to see if this was meaningful leakge so we ran a boostrap blah blah z score blah blah on two top performing models blah blah z-score of like -4 or whatever maybe this matters idk im not a statistician.
 \newpage
 \bibliography{mybib}{}
 \addcontentsline{toc}{section}{References}
