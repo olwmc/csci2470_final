@@ -1,7 +1,8 @@
 \begin{thebibliography}{10}
 
 \bibitem{LLM2Vec}
-Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau, Nicolas Chapados, and Siva Reddy.
+Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau,
+  Nicolas Chapados, and Siva Reddy.
 \newblock Llm2vec: Large language models are secretly powerful text encoders.
 \newblock (arXiv:2404.05961), August 2024.
 \newblock arXiv:2404.05961 [cs].
@@ -13,19 +14,30 @@ Sumithra Bhakthavatsalam, Chloe Anastasiades, and Peter Clark.
 \bibitem{snli}
 Samuel~R. Bowman, Gabor Angeli, Christopher Potts, and Christopher~D. Manning.
 \newblock A large annotated corpus for learning natural language inference.
-\newblock In {\em Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing (EMNLP)}. Association for Computational Linguistics, 2015.
+\newblock In {\em Proceedings of the 2015 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}. Association for Computational
+  Linguistics, 2015.
 
 \bibitem{STS}
-Daniel~M. Cer, Mona~T. Diab, Eneko Agirre, I{\~{n}}igo Lopez{-}Gazpio, and Lucia Specia.
-\newblock Semeval-2017 task 1: Semantic textual similarity - multilingual and cross-lingual focused evaluation.
+Daniel~M. Cer, Mona~T. Diab, Eneko Agirre, I{\~{n}}igo Lopez{-}Gazpio, and
+  Lucia Specia.
+\newblock Semeval-2017 task 1: Semantic textual similarity - multilingual and
+  cross-lingual focused evaluation.
 \newblock {\em CoRR}, abs/1708.00055, 2017.
 
 \bibitem{ethayarajh2019contextualcontextualizedwordrepresentations}
 Kawin Ethayarajh.
-\newblock How contextual are contextualized word representations? comparing the geometry of bert, elmo, and gpt-2 embeddings, 2019.
+\newblock How contextual are contextualized word representations? comparing the
+  geometry of bert, elmo, and gpt-2 embeddings, 2019.
+
+\bibitem{houlsby2019parameterefficienttransferlearningnlp}
+Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
+  de~Laroussilhe, Andrea Gesmundo, Mona Attariyan, and Sylvain Gelly.
+\newblock Parameter-efficient transfer learning for nlp, 2019.
 
 \bibitem{hu2021loralowrankadaptationlarge}
-Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu~Wang, and Weizhu Chen.
+Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
+  Wang, Lu~Wang, and Weizhu Chen.
 \newblock Lora: Low-rank adaptation of large language models, 2021.
 
 \bibitem{muennighoff2022sgptgptsentenceembeddings}
@@ -42,17 +54,20 @@ Nils Reimers and Iryna Gurevych.
 \newblock Sentence-bert: Sentence embeddings using siamese bert-networks, 2019.
 
 \bibitem{RepImprovesLLM}
-Jacob~Mitchell Springer, Suhas Kotha, Daniel Fried, Graham Neubig, and Aditi Raghunathan.
+Jacob~Mitchell Springer, Suhas Kotha, Daniel Fried, Graham Neubig, and Aditi
+  Raghunathan.
 \newblock Repetition improves language model embeddings.
 \newblock (arXiv:2402.15449), February 2024.
 \newblock arXiv:2402.15449.
 
 \bibitem{tang2024poolingattentioneffectivedesigns}
 Yixuan Tang and Yi~Yang.
-\newblock Pooling and attention: What are effective designs for llm-based embedding models?, 2024.
+\newblock Pooling and attention: What are effective designs for llm-based
+  embedding models?, 2024.
 
 \bibitem{LLMEmbed}
-Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder, and Furu Wei.
+Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder, and Furu
+  Wei.
 \newblock Improving text embeddings with large language models.
 \newblock (arXiv:2401.00368), May 2024.
 \newblock arXiv:2401.00368.

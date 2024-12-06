@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2023/nixos.org)
+This is BibTeX, Version 0.99d (TeX Live 2022/nixos.org)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: plain.bst
@@ -9,45 +9,45 @@ Warning--empty journal in RepImprovesLLM
 Warning--there's a number but no volume in RepImprovesLLM
 Warning--empty journal in LLMEmbed
 Warning--there's a number but no volume in LLMEmbed
-You've used 12 entries,
+You've used 13 entries,
             2118 wiz_defined-function locations,
-            554 strings with 6250 characters,
-and the built_in function-call counts, 3678 in all, are:
-= -- 314
-> -- 269
+            557 strings with 6502 characters,
+and the built_in function-call counts, 4097 in all, are:
+= -- 346
+> -- 312
 < -- 0
-+ -- 107
-- -- 94
-* -- 258
-:= -- 657
-add.period$ -- 34
-call.type$ -- 12
-change.case$ -- 83
++ -- 124
+- -- 110
+* -- 293
+:= -- 731
+add.period$ -- 36
+call.type$ -- 13
+change.case$ -- 94
 chr.to.int$ -- 0
-cite$ -- 18
-duplicate$ -- 106
-empty$ -- 249
-format.name$ -- 94
-if$ -- 726
+cite$ -- 19
+duplicate$ -- 113
+empty$ -- 271
+format.name$ -- 110
+if$ -- 806
 int.to.chr$ -- 0
-int.to.str$ -- 12
+int.to.str$ -- 13
 missing$ -- 6
-newline$ -- 60
-num.names$ -- 24
-pop$ -- 114
+newline$ -- 64
+num.names$ -- 26
+pop$ -- 130
 preamble$ -- 1
-purify$ -- 71
+purify$ -- 81
 quote$ -- 0
-skip$ -- 88
+skip$ -- 96
 stack$ -- 0
-substring$ -- 61
-swap$ -- 10
+substring$ -- 66
+swap$ -- 11
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 48
+type$ -- 52
 warning$ -- 6
-while$ -- 24
-width$ -- 14
-write$ -- 118
+while$ -- 26
+width$ -- 15
+write$ -- 126
 (There were 6 warnings)

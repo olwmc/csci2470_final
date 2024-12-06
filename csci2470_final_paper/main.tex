@@ -71,9 +71,7 @@ In short, we're trying to solve the problem of "low quality" embeddings in small
 Reusing pretrained LLMs for semantic tasks like STS is nothing new. There is extensive literature about finetuning and retraining
 these models for a variety of new tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, \cite{tang2024poolingattentioneffectivedesigns}. Moreover using decoder-only models for embedding tasks is common, with works like
 SGPT \cite{muennighoff2022sgptgptsentenceembeddings}, LLM2VEC \cite{LLM2Vec}, LLMEmbed \cite{LLMEmbed} etc. exploring this idea as well as "meta-techniques" for improving these embeddings like Mitchell et. al's paper on how repeating a given piece of text within a prompt improves downstream benchmark performance after collecting a truncated subset of the generated latents \cite{RepImprovesLLM}. It is also well known that GPT-2 produces incredibly low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} and even basic exploration shows that the smaller \verb|gpt2-medium| produces very low quality text generation.
-Our work also takes inspiration from other parameter-efficient finetuning methods
-
-% Our work takes inspiration from adapter models but we leverage a key difference -- Our approach takes advantage of the fact that different layers encode meaningfully different information and we treat them as independent sources of information. This is in contrast to adapter models which simply modify the existing network but keep the same flow of information. Moreover, adapter models are constrained by needing to create a single representation that conforms to the existing model's "hardware", so to speak. Our approach is completely free to develop whatever representation is needed to extract relevant information.
+Our work also takes inspiration from other parameter-efficient finetuning methods such as Adapters \cite{houlsby2019parameterefficienttransferlearningnlp}.
 
 \begin{figure}[!htb]
     \centering
@@ -159,6 +157,19 @@ Moreover, this architecture actually ended up with more than $600,000$ fewer par
 
 \subsection{Experiments that failed}
 
+\paragraph*{Latent choice}
+We tried several choices of latent including mean and sum pooled accross all of the tokens at each layer. We found significantly worse performance from either approach. Intuitively this makes sense, only the last token has a "full picture" of the input and polluting that token with others would surely decrease performance. 
+
+\paragraph*{Hyperparameter Optimization}
+We ran several hyperparameter optimization/search runs on the autoencoders changing everything from their depth, dropout rate, width, etc. and found absolutely no benefit in downstream performance (Despite significant effort). We tried both manual approaches and automated approaches using Optuna. Interestingly, we \textit{did} see improvements in our autoencoder loss but did not see any downstream benefit -- Suggesting our informational bottleneck is either the incoming latents or the architecture itself.
+
+\paragraph*{SNLI Pretraining}
+Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing} pretrained its siamese networks on the SNLI \cite{snli} relation task to great benefit. We tried this with our layerwise approach and found success in the SNLI task but no downstream benefits for STS.
+
+\paragraph*{Pooling and attention mechanisms}
+We tried several schemes for pooling or otherwise combining both the latent representations coming from \verb|gpt2-medium| and our learned representations. One pooling strategy we tried in the hopes of creating a single unified embedding was modifying the autoencoder training to instead of having twenty-four individual vectors to decode, we simply up-projected each encoder's output and summed accross each layer. This gave us a single high dimensional vector which we then fed into each "decoder", which was was trained to reconstruct the original layer's embedding from the unified one. The idea was that the unified representation would be encouraged to reuse subspaces to carry each layer's individual information so that it could be appropriately decoded. This representation performed worse than our best model with a Pearson correlation of roughly \verb|60%|. We do believe, though, that this scheme is probably the way forward if we want to expand to other tasks.
+
+We also experimented with some of the attention and attention pooling strategies outlined in Tang et. al \cite{tang2024poolingattentioneffectivedesigns}. This did not do well when pooling either the original latents, nor the learned autoencoded representations.
 
 % Our loss function has evolved significantly since the beginning. We plotted the distribution of our residuals and noticed
 % the spread could be tightened. Since this is a correlative task, we don't care about bias, just variance. So instead of doing MSE
@@ -218,9 +229,6 @@ While our performance does not match state-of-the-art models, these techniques m
 We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aforementioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different representations (and thus contextual information) of the input to perform well at.
 
 A natural extension to our work would be to try a larger and more capable base model. Our initial experiments used \verb|qwen2-0.5B|, which performed significantly better than \verb|gpt2-medium| on both Pearson and Spearman correlation (\verb|+~2%| on both). However, this gap disappeared once we made the changes to the loss function described in Section \ref{Loss}. After rerunning the experiments with both base models and the new loss function, we found no meaningful difference between the two despite \verb|qwen2-0.5B|'s additional parameters. This likely suggests a limitation in our experimental setup for qwen2, given that we simply substituted the base model in our original architecture and only adjusted the input dimension of the autoencoders to match. A more thorough investigation of larger models would require architectural changes tailored to their specific parameter counts. We just wanted to assure that our approach was not uniquely suitable for \verb|gpt2-medium|.
-
-\subsection{\textit{"Why didn't attention mechanisms or pooling work well?"}}
-Attention in this setup feels correct but is ultimately flawed because of the assumption that linear combinations of "tokens" are meaningful. For the same reason, layerwise pooling is also unlikely to ever work.
 
 \subsection{\textit{"Isn't this just an adapter?"}}
 
