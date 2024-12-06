@@ -129,7 +129,7 @@ $$
 $$
 Where $y_\theta$ is the predicted similarity scores and $y$ is the ground truth. We only saw meaningful improvement with this new loss metric on the final architecture, so our experimental results reported for all but the last model used MSE.
 
-\subsection{Architecture}
+\subsection{Architecture} \label{Architecture}
 Our architecture was decided through a series of experiments and trial and error. We tried to only make architectural decisions which were, in some way, \textit{principled} -- I.e. we had a decent reason for making that particular change.
 
 \subsubsection{First iteration}
@@ -205,7 +205,7 @@ Which STSB has rated at a similarity of \verb|0%|. Our model is less conservativ
 
 This raises deeper questions about the nature of semantic similarity itself. Two humans, given different contexts or purposes (e.g., legal analysis vs. historical study), might rate these sentences quite differently. Our model's architecture, processing information across multiple transformer layers, may naturally capture these various levels of similarity -- from surface-level linguistics to broader themes. Of course this does not distract from the fact that our model is nowhere near state of the art, but it is a worthwhile question to ask either way. Clearly our training produced \textit{a particular interpretation of semantic similarity}, but which was it? Excluding clear errors, of course. We offer more insight into this in Section \ref{error analysis}.
 
-\subsection{\textit{"What did we actually create?"}}
+\subsection{\textit{"What did we actually create?"}} \label{pathways}
 Although our original motivation was in the vein of interpretability, our approach combines several potentially useful components:
 \begin{itemize}
     \item A distinct, layerwise-independent parameter-efficient approach to adapting existing LLMs to sentence similarity without fine-tuning
@@ -231,8 +231,13 @@ Attention in this setup feels correct but is ultimately flawed because of the as
 %     How did your approach change over time? What kind of pivots did you make, if any? Would you have done differently if you could do your project over again?
 %     What do you think you can further improve on if you had more time?
 %     What are your biggest takeaways from this project/what did you learn?
+We're very happy with how this project turned out. There were a couple of scares here and there (one horrible incident of accidentally swapping our train and test sets for a few days comes to mind) but overall the performance we reached was significantly past our goal and we learned an incredible amount. We're quite proud of how we were able to take such a weak model and turn it around into a, though not state of the art, mostly capable STS model.
 
-One big takeaway from this project is that as gigantic open source LLMs become more prevalent, it might be possible to chop off most of their layers and train little "interpreter" modules as we did here to leverage the incredibly rich and complex learned representations at a fraction of the cost and computation time.
+At the start of this project we made a pact to try and be principled with each decision that came our way. For example, we made it a rule to never just make a model deeper or wider for no reason. We tried to stay as minimal as possible throughout the whole project and we feel that paid off. We believe that every decision in our architectural design process (Mostly described in Section \ref{Architecture}) had good and clear motivation. We're also incredibly proud of our experimentation and overall scientific process.
+
+If we had more time we would definitely choose to try and make our model a more general embedding model (Likely though some kind of pooling mechanism) and work towards applying it to the Massive Text Embedding Benchmark \cite{muennighoff2022mteb}. We have some other experiments that we briefly described in the section on architecture that we believe are the way forward in terms of overall performance, we just think they would take significant time and research effort to prove fruitful.
+
+Our biggest takeway by far from doing this project is that research is an incredibly fun and collaborative process. We all thoroughly enjoyed all the exploration, reading, experimentation, and rebuilding our mental models over and over to try and make good decisions. As for what we learned, we all believe we made significant progress in our understanding and ability in, among other things, training and debugging neural networks, transformer models, metric and similarity learning, reading and consuming research papers, scientific writing, and collaborative research.
 
 \section{Division of Labor}
 % Division of labor: Briefly outline who will be responsible for which part(s) of the project.
