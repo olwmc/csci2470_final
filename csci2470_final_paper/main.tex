@@ -73,6 +73,8 @@ these models for a variety of new tasks \cite{reimers2019sentencebertsentenceemb
 SGPT \cite{muennighoff2022sgptgptsentenceembeddings}, LLM2VEC \cite{LLM2Vec}, LLMEmbed \cite{LLMEmbed} etc. exploring this idea as well as "meta-techniques" for improving these embeddings like Mitchell et. al's paper on how repeating a given piece of text within a prompt improves downstream benchmark performance after collecting a truncated subset of the generated latents \cite{RepImprovesLLM}. It is also well known that GPT-2 produces incredibly low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} and even basic exploration shows that the smaller \verb|gpt2-medium| produces very low quality text generation.
 Our work also takes inspiration from other parameter-efficient finetuning methods such as Adapters \cite{houlsby2019parameterefficienttransferlearningnlp}.
 
+Much of our work relies on the idea tha different layers in LLMs encode meaningfully different information. This is exemplified by Anthropic's SAE work and others (CITE ME CITE ME)
+
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=0.65\linewidth]{raw_cosine_sim.png}
@@ -180,14 +182,6 @@ We also experimented with some of the attention and attention pooling strategies
 
 \paragraph*{Fake Data}
 At one point we were wondering if we just simply didn't have enough examples of semantically similar sentences to break our best score, so we tried a few data generation strategies to see if we could mitigate this problem. Most notably we tried adding a little bit of noise to the activations to see if the model would generalize better -- It didn't. We also tried modifying the prompts to change words or capitalization (To see if the difference in tokenization would change anything) -- It didn't.
-
-% Our loss function has evolved significantly since the beginning. We plotted the distribution of our residuals and noticed
-% the spread could be tightened. Since this is a correlative task, we don't care about bias, just variance. So instead of doing MSE
-% we just optimize to minimize the variance of the residuals directly
-% $$
-% \mathcal{L}(\theta) = \log(\text{Var}(y - \hat{y}))
-% $$
-% Where the added log improved stability
 
 \section{Results}
 \subsection{Requirements for success}
