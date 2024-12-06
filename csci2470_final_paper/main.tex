@@ -239,7 +239,7 @@ Although our original motivation was in the vein of interpretability, our approa
     \item A similarity measure for \verb|gpt2-medium|'s activations that aligns with human judgments of semantic similarity, potentially offering more interpretable insights into the model's representations
     \item A representation learning scheme for LLM activations that preserves the base model's weights and information flow while enabling task-specific adaptation
 \end{itemize}
-While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts. In future work we aim to see how far these individual components can be improved.
+While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts. Our technique is also quite parameter efficient, using less than ten percent of the base-model's total parameter count. In future work we aim to see how far these individual components can be improved. 
 
 \subsection{\textit{"What about a bigger base model?"} and the Representational Ceiling}
 We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aforementioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different representations (and thus contextual information) of the input to perform well at.
@@ -322,6 +322,7 @@ Which shows that the model has \textit{not learned to recognize completely ident
 
 \newpage
 \section{Appendix: \textit{STSB} dataset leakage} 
+While working on our analysis we noticed that the some of the individuals in some of the test pairs of the STSB dataset were also present in the training set. Except for one instance, they were all paired with different sentences than in the test set. We wanted to see if this was meaningful leakge so we ran a boostrap blah blah z score blah blah
 \newpage
 \bibliography{mybib}{}
 \addcontentsline{toc}{section}{References}
