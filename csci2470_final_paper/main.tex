@@ -1,5 +1,6 @@
-\documentclass[14pt]{article}
-\usepackage[margin=0.5in]{geometry} 
+\documentclass{article}
+\usepackage[final]{neurips_2023}
+% \usepackage[margin=0.5in]{geometry} 
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{graphicx}
 \usepackage{colortbl}
@@ -19,8 +20,8 @@
 
 \title{FREEZE!: Pretrained Language Models as Frozen Feature Extractors for Semantic Tasks}
 \author{
-    Hayden McDonald\\hayden\_mcdonald@brown.edu \and 
-    Nicholas Marsano\\nicholas\_marsano@brown.edu\and 
+    Hayden McDonald\\hayden\_mcdonald@brown.edu \And
+    Nicholas Marsano\\nicholas\_marsano@brown.edu\And
     Oliver McLaughlin\\oliver\_mclaughlin@brown.edu
 }
 
@@ -28,15 +29,12 @@
 
 \maketitle
 
-% Title: Summarizes the main idea of your project.
-% Who: Names and logins of all your group members.
-
 \begin{abstract}
     We investigate whether frozen language models can be used effectively as feature extractors for semantic tasks without any fine-tuning. Our approach takes the intermediate activations of GPT2-medium and treats them as independent sources of semantic information, processing them through a combination of autoencoder pretraining and siamese networks. Despite GPT2-medium's known limitations in generating quality embeddings, we achieve \verb|76.86%| Pearson correlation on the STSB benchmark without touching the base model's weights. Interestingly, we found that widening the bottleneck of our autoencoders at later layers significantly improved performance, suggesting these layers encode richer semantic information that requires more representational capacity to capture. While not state-of-the-art, our results demonstrate that frozen LLM representations contain substantial semantic information that can be extracted efficiently, offering a possible lightweight alternative to traditional fine-tuning approaches.
 \end{abstract}
 \setcounter{tocdepth}{4}
-\setcounter{secnumdepth}{4}
-\tableofcontents
+% \setcounter{secnumdepth}{4}
+% \tableofcontents
 
 \section{Introduction}
 Our project is an investigation into a few related areas. In short, we wanted to see if we could develop an architecture that could take the intermediate activations of a pre-trained decoder-only large language model (Henceforth LLM) and use them to do text-embedding tasks. We chose semantic sentence similarity (STS) as our primary focus and motivation because of its simplicity. This task involves training a model to rate the semantic similarity of a pair of sentences. Importantly, in contrast to most other work using LLMs for text embedding, we are \textit{not} fine-tuning the model. We are simply taking a subset of the intermediate activations and treating them as a kind of \textit{"feature extracted"} (frozen) representation.
@@ -51,10 +49,22 @@ We chose this idea for several reasons.
     
     \item From an interpretability standpoint, most distance or similarity measures (E.g cosine similarity) do not correlate strongly with \textit{human ideas} of similarity (Figure \ref{fig:raw-corr}). By training a similarity learner on LLM activations, grounded in human ideas of similarity, we hoped to produce a more interpretable measure of similarity for LLM activations.
     
-    \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. \footnote{There was only one paper we could find doing a similar setup -- extracting latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}. There are many papers \textit{like} this one (\cite{lu2021pretrainedtransformersuniversalcomputation} comes to mind) but almost none completely freeze the entire model and "start from scratch" as we did here.} We're not really interested in \textit{what} information is \text{where}, we just want to see \textit{if it's useable} for a simple task like STS.
+    \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. %\footnote{There was only one paper we could find doing a similar setup -- extracting latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}. There are many papers \textit{like} this one (\cite{lu2021pretrainedtransformersuniversalcomputation} comes to mind) but almost none completely freeze the entire model and "start from scratch" as we did here.} We're not really interested in \textit{what} information is \text{where}, we just want to see \textit{if it's useable} for a simple task like STS.
     
 \end{enumerate}
 We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for study because Oliver was familiar with its architecture and it readily fit onto all of our GPUs. We also did minor experiments on \verb|qwen2-0.5B| (391M parameters). Moreover we chose \verb|gpt2-medium| because of its very low quality text generation ability and verifiably low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} (This paper tests the larger \verb|gpt2| base model which is more powerful. Our model is a smaller, less performance version of that). It was not at all a priori obvious to us that its representations would be fit for this task.
+
+
+\subsection{Problem Setup} \label{Setup}
+Figure \ref{fig:raw-corr} was our "starting point". This figure depicts the correlation between two important quantities for our investigation:
+\begin{enumerate}
+    \item The cosine similarity of two sentences' latent representations (See \ref{latent} for more information on this representation)
+    \item A human rated similarity score for those same two sentences (See \ref{STS-section})
+\end{enumerate}
+For each layer we computed the mean correlation between these two quantities for more than five thousand sentence pairs. This is essentially the problem we are trying to solve -- \textit{How can we transform these latent representations into something useable for semantic text similarity?}
+
+In short, we're trying to solve the problem of "low quality" embeddings in small LLMs like \verb|gpt2-medium| by finding an architecture which can leverage the information contained within its latents. Our target task for this experiment is semantic text similarity and we will measure success through our performance on the STSB \cite{STS} benchmark. To do this we trained a similarity learner on the STS dataset with some added unsupervised pretraining. We believe that if we can take these latent representations generated by \verb|gpt2-medium| and train a model to effectively use them that this would be evidence of these embeddings being much higher quality than originally expected in terms of their information content.
+
 \section{Related Work}
 % Related Work: Are you aware of any, or is there any prior work that you drew on to do your project?
 %     Please read and briefly summarize (no more than one paragraph) at least one paper/article/blog relevant to your project.
@@ -67,20 +77,10 @@ Our work also takes inspiration from other parameter-efficient finetuning method
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.5\linewidth]{raw_cosine_sim.png}
+    \includegraphics[width=0.65\linewidth]{raw_cosine_sim.png}
     \caption{\textbf{The problem we are ultimately trying to solve}. Layerwise average correlation between gpt1-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
     \label{fig:raw-corr}
-\end{figure}
-
-\subsection{Problem Setup} \label{Setup}
-Figure \ref{fig:raw-corr} was our "starting point". This figure depicts the correlation between two important quantities for our investigation:
-\begin{enumerate}
-    \item The cosine similarity of two sentences' latent representations (See \ref{latent} for more information on this representation)
-    \item A human rated similarity score for those same two sentences (See \ref{STS-section})
-\end{enumerate}
-For each layer we computed the mean correlation between these two quantities for more than five thousand sentence pairs. This is essentially the problem we are trying to solve -- \textit{How can we transform these latent representations into something useable for semantic text similarity?}
-
-In short, we're trying to solve the problem of "low quality" embeddings in small LLMs like \verb|gpt2-medium| by finding an architecture which can leverage the information contained within its latents. Our target task for this experiment is semantic text similarity and we will measure success through our performance on the STSB \cite{STS} benchmark. To do this we trained a similarity learner on the STS dataset with some added unsupervised pretraining. We believe that if we can take these latent representations generated by \verb|gpt2-medium| and train a model to effectively use them that this would be evidence of these embeddings being much higher quality than originally expected in terms of their information content.
+\end{figure}    
 
 
 \section{Data}
@@ -152,7 +152,7 @@ Moreover, this architecture actually ended up with more than $600,000$ fewer par
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.85\linewidth]{encoder_loss.png}
+    \includegraphics[width=1\linewidth]{encoder_loss.png}
     \caption{Autoencoder loss by layer. $\text{d}_\text{bottleneck} = 256$}
     \label{fig:autoencoder-loss}
 \end{figure}
@@ -173,7 +173,7 @@ Moreover, this architecture actually ended up with more than $600,000$ fewer par
 Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal
 
 \subsection{Final Results}
-We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|.
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm the utility of the unsupervised pretraining.
 % Results: What constitutes “success?”
 %     What experiments did you run?
 %     For most of our assignments, we have looked at the accuracy of the model. Does the notion of “accuracy” apply for your project, or is some other metric more appropriate?
@@ -198,7 +198,8 @@ An interesting question to ask here is \textit{What kind of semantic similarity 
 \end{verbatim}
 Our model labels them at \verb|75.98%|. Which is \textit{"more"} correct? Although the literal content of the two sentences is different, they are quite similar in what they are conveying -- Bills being passed regarding LGBT civil rights. There are numerous examples exactly like this one. One weaker example is:
 \begin{verbatim}
-    'You will want to clean the area first.', 'You will also want to remove the seeds.',
+    'You will want to clean the area first.',
+    'You will also want to remove the seeds.',
 \end{verbatim}
 Which STSB has rated at a similarity of \verb|0%|. Our model is less conservative in its estimate at \verb|56.01%|. Neither interpretation is wrong and clearly our model makes obvious and unavoidable errors (See Section \ref{error analysis} for more details) but in many contexts -- such as following steps in a recipe -- these sentences could be functionally identical, both indicating preparatory steps in a sequence.
 
@@ -217,6 +218,10 @@ While our performance does not match state-of-the-art models, these techniques m
 We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aforementioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different representations (and thus contextual information) of the input to perform well at.
 
 A natural extension to our work would be to try a larger and more capable base model. Our initial experiments used \verb|qwen2-0.5B|, which performed significantly better than \verb|gpt2-medium| on both Pearson and Spearman correlation (\verb|+~2%| on both). However, this gap disappeared once we made the changes to the loss function described in Section \ref{Loss}. After rerunning the experiments with both base models and the new loss function, we found no meaningful difference between the two despite \verb|qwen2-0.5B|'s additional parameters. This likely suggests a limitation in our experimental setup for qwen2, given that we simply substituted the base model in our original architecture and only adjusted the input dimension of the autoencoders to match. A more thorough investigation of larger models would require architectural changes tailored to their specific parameter counts. We just wanted to assure that our approach was not uniquely suitable for \verb|gpt2-medium|.
+
+\subsection{\textit{"Why didn't attention mechanisms or pooling work well?"}}
+Attention in this setup feels correct but is ultimately flawed because of the assumption that linear combinations of "tokens" are meaningful. For the same reason, layerwise pooling is also unlikely to ever work.
+
 \section{Reflection}
 % Reflection: please address the following questions (along with other thoughts you have about the project, if any):
 %     How do you feel your project ultimately turned out? How did you do relative to your base/target/stretch goals?

@@ -1,9 +1,5 @@
 \begin{thebibliography}{10}
 
-\bibitem{gpt2malware}
-Mahmoud Basharat and Marwan Omar.
-\newblock Harnessing gpt-2 for feature extraction in malware detection: A novel approach to cybersecurity, 2024.
-
 \bibitem{LLM2Vec}
 Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau, Nicolas Chapados, and Siva Reddy.
 \newblock Llm2vec: Large language models are secretly powerful text encoders.
@@ -31,10 +27,6 @@ Kawin Ethayarajh.
 \bibitem{hu2021loralowrankadaptationlarge}
 Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu~Wang, and Weizhu Chen.
 \newblock Lora: Low-rank adaptation of large language models, 2021.
-
-\bibitem{lu2021pretrainedtransformersuniversalcomputation}
-Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch.
-\newblock Pretrained transformers as universal computation engines, 2021.
 
 \bibitem{muennighoff2022sgptgptsentenceembeddings}
 Niklas Muennighoff.
