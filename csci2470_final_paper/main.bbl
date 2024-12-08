@@ -1,5 +1,10 @@
 \begin{thebibliography}{10}
 
+\bibitem{gpt2malware}
+Mahmoud Basharat and Marwan Omar.
+\newblock Harnessing gpt-2 for feature extraction in malware detection: A novel
+  approach to cybersecurity, 2024.
+
 \bibitem{LLM2Vec}
 Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau,
   Nicolas Chapados, and Siva Reddy.
@@ -23,6 +28,19 @@ Samuel~R. Bowman, Gabor Angeli, Christopher Potts, and Christopher~D. Manning.
   Natural Language Processing (EMNLP)}. Association for Computational
   Linguistics, 2015.
 
+\bibitem{bricken2023monosemanticity}
+Trenton Bricken, Adly Templeton, Joshua Batson, Brian Chen, Adam Jermyn, Tom
+  Conerly, Nick Turner, Cem Anil, Carson Denison, Amanda Askell, Robert
+  Lasenby, Yifan Wu, Shauna Kravec, Nicholas Schiefer, Tim Maxwell, Nicholas
+  Joseph, Zac Hatfield-Dodds, Alex Tamkin, Karina Nguyen, Brayden McLean,
+  Josiah~E Burke, Tristan Hume, Shan Carter, Tom Henighan, and Christopher
+  Olah.
+\newblock Towards monosemanticity: Decomposing language models with dictionary
+  learning.
+\newblock {\em Transformer Circuits Thread}, 2023.
+\newblock
+  https://transformer-circuits.pub/2023/monosemantic-features/index.html.
+
 \bibitem{STS}
 Daniel~M. Cer, Mona~T. Diab, Eneko Agirre, I{\~{n}}igo Lopez{-}Gazpio, and
   Lucia Specia.
@@ -44,6 +62,10 @@ Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin
 Edward~J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean
   Wang, Lu~Wang, and Weizhu Chen.
 \newblock Lora: Low-rank adaptation of large language models, 2021.
+
+\bibitem{lu2021pretrainedtransformersuniversalcomputation}
+Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch.
+\newblock Pretrained transformers as universal computation engines, 2021.
 
 \bibitem{muennighoff2022sgptgptsentenceembeddings}
 Niklas Muennighoff.
