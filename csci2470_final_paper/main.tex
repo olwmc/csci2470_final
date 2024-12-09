@@ -30,9 +30,8 @@
 \maketitle
 
 \begin{abstract}
-    We investigate whether frozen language models can be used effectively as feature extractors for semantic tasks without any fine-tuning. Our approach takes the intermediate activations of GPT2-medium and treats them as independent sources of semantic information, processing them through a combination of autoencoder pretraining and siamese networks. Despite GPT2-medium's known limitations in generating quality embeddings, we achieve \verb|76.86%| Pearson correlation on the STSB benchmark without touching the base model's weights. Our model has less than 10\% of \verb|gpt2-medium|'s total parameter count indicating this approach may be useful for parameter efficient task transfer.
+    We investigate whether frozen language models can effectively serve as feature extractors for semantic tasks without any fine-tuning. By treating intermediate activations from different layers as independent sources of semantic information, we combine autoencoder pretraining with siamese networks to learn semantic representations. Using GPT2-medium as our base model, we achieve 76.86\% Pearson correlation on the Semantic Text Similarity Benchmark (STSB) using a model containing less than 10\% of GPT2-medium's parameter count. Our ablation studies reveal that widening the representational bottleneck at later layers significantly improves performance, providing strong evidence that semantic information densifies in deeper layers. Our approach also produces an interpretable similarity measure for GPT2-medium's intermediate activations that aligns with human judgments of semantic similarity.
 \end{abstract}
-\setcounter{tocdepth}{4}
 % \setcounter{secnumdepth}{4}
 % \tableofcontents
 
@@ -191,7 +190,7 @@ At one point we were wondering if we just simply didn't have enough examples of 
 Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal.
 
 \subsection{Final Results}
-We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. Our model's errors on the test set are quite favorably distributed, Figure \ref{fig:residuals} shows that the vast majority are centered near zero ($\mu = .06$, $\sigma = 0.197$) with quite skinny tails. A basic Q-Q plot shows that our model is distributed relatively normally but with thin tails. Contrary to our intuition, changing our loss function back to MSE did not improve the errors of our residuals on zero but did increase our variance, as expected.
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. Our model's errors on the test set are quite favorably distributed, Figure \ref{fig:residuals} shows that the vast majority are centered near zero ($\mu = .06$, $\sigma = 0.197$) with quite skinny tails. A basic Q-Q plot shows that our model is distributed relatively symmetrically with thin tails, indicating no major over or underprediction. Contrary to our intuition, changing our loss function back to MSE did not bring the center of our residuals to closer to zero but instead just increased the variance.
 
 We also performed some qualitative analysis on the highest error predictions (See Section \ref{error analysis} for more details) and note that although or model performs moderately well on the benchmark, it has clear and unavoidable limitations. Most notably, it has trouble distinguishing semantic and syntactic similarity and it did not learn to recognize identical sentences. Despite these limitations, we still consider our results a success because of our performance on STSB. Even though \textit{some} of our model's predictions are quite bad, the vast majority of them are quite good, hence our STSB performance.
 
@@ -199,7 +198,7 @@ We also performed some qualitative analysis on the highest error predictions (Se
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=.90\linewidth]{residuals.png}
-    \caption{Distribution of residuals of our final model}
+    \caption{Density histogram and Q-Q plot of final model errors}
     \label{fig:residuals}
 \end{figure}    
 
