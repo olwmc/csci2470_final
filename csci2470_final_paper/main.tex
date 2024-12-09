@@ -191,7 +191,18 @@ At one point we were wondering if we just simply didn't have enough examples of 
 Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal.
 
 \subsection{Final Results}
-We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. We also performed some qualitative analysis on the highest error predictions (See Section \ref{error analysis} for more details) and note that although or model performs moderately well on the benchmark, it has clear and unavoidable limitations. Most notably, it has trouble distinguishing semantic and syntactic similarity and it did not learn to recognize identical sentences. Despite these limitations, we still consider our results a success because of our performance on STSB. Even though \textit{some} of our model's predictions are quite bad, the vast majority of them are quite good, hence our STSB performance.
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. Our model's errors on the test set are quite favorably distributed, Figure \ref{fig:residuals} shows that the vast majority are centered near zero ($\mu = .06$, $\sigma = 0.197$) with quite skinny tails. A basic Q-Q plot shows that our model is distributed relatively normally but with thin tails. Contrary to our intuition, changing our loss function back to MSE did not improve the errors of our residuals on zero but did increase our variance, as expected.
+
+We also performed some qualitative analysis on the highest error predictions (See Section \ref{error analysis} for more details) and note that although or model performs moderately well on the benchmark, it has clear and unavoidable limitations. Most notably, it has trouble distinguishing semantic and syntactic similarity and it did not learn to recognize identical sentences. Despite these limitations, we still consider our results a success because of our performance on STSB. Even though \textit{some} of our model's predictions are quite bad, the vast majority of them are quite good, hence our STSB performance.
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=.90\linewidth]{residuals.png}
+    \caption{Distribution of residuals of our final model}
+    \label{fig:residuals}
+\end{figure}    
+
 
 \subsection{Answering Our Original Questions}
 \subsubsection*{\textit{Do 'similar' prompts have \ 'similar' representations?}}
