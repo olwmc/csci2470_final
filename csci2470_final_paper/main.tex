@@ -319,7 +319,8 @@ Predicted: 0.9893
 True similarity: 0.0400
 Predicted: 0.8193
 \end{verbatim}
-These are just the worst performing sentence pairs but they show a trend seen by browsing the top fifty or so. Clearly our model has a different idea of similarity than STSB does, but that model isn't always completely off base. Consider the last sentence pair in this set. Both sentences describe a particular figure winning a particular election. Obviously, semantically, these two sentences are nothing alike, they are describing two completely different figures winning two completely different elections, but they are "semantically similar" in a more abstract sense. Similarly with the Taiwan/China pair and the supreme court pair. That being said, the model clearly also just fails to see the similarity in some pairs, as seen in the man and woman laughing pair. Interestingly, the model also produces the following prediction:
+These are just the worst performing sentence pairs but they show a trend seen by browsing the top fifty or so. Clearly our model has a different idea of similarity than STSB does, but that model isn't always completely off base. Consider the last sentence pair in this set. Both sentences describe a particular figure winning a particular election. Obviously, semantically, these two sentences are nothing alike, they are describing two completely different figures winning two completely different elections, but they are "semantically similar" in a more abstract sense. Similarly with the Taiwan/China pair and the supreme court pair. Did our model learn to recognize these as similar? Or is it just picking up surface level syntactic similarity? Regardless, the model clearly also just fails to see the similarity in some pairs, as seen in the man and woman laughing pair. Interestingly, the model also produces the following prediction:
+
 \begin{verbatim}
 'A brown dog is jumping.',
 'A brown dog is jumping',
@@ -329,9 +330,7 @@ Predicted: 0.4735
 Which shows that the model has \textit{not learned to recognize completely identical sentences}. This might imply that our training set could use more identical pairs or that our model needs to be restructured in such a way that the ones vector (\verb|(1, 1, ..., 1)|) produces a \verb|1| at the end of the MLP. This is because our layerwise siamese networks use cosine similarity, so the output at each layer for two identical prompts is always the ones vector. In any case, this is a significant limitation of our architecture. Moreover many of these examples show how our model confuses surface level syntactic similarity with deeper semantic similarity.
 
 \newpage
-% \section{Appendix: \textit{STSB} dataset leakage} 
-% While working on our analysis we noticed that the some of the individuals in some of the test pairs of the STSB dataset were also present in the training set. Except for one instance, they were all paired with different sentences than in the test set. We wanted to see if this was meaningful leakge so we ran a boostrap blah blah z score blah blah on two top performing models blah blah z-score of like -4 or whatever maybe this matters idk im not a statistician.
-% \newpage
+
 \bibliography{mybib}{}
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
