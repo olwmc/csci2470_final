@@ -188,10 +188,10 @@ At one point we were wondering if we just simply didn't have enough examples of 
 
 \section{Results}
 \subsection{Requirements for success}
-Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal
+Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal.
 
 \subsection{Final Results}
-We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. We also performed some qualitative analysis on the highest error predictions (See Section \ref{error analysis} for more details) and note that although or model performs moderately well on the benchmark, it has clear and unavoidable limitations. Most notably, it has trouble distinguishing semantic and syntactic similarity and it did not learn to recognize identical sentences. Despite these limitations, we still consider our results a success because of our performance on STSB. Even though \textit{some} of our model's predictions are quite bad, the vast majority of them are quite good, hence our STSB performance.
 
 \subsection{Answering Our Original Questions}
 \subsubsection*{\textit{Do 'similar' prompts have \ 'similar' representations?}}
@@ -207,12 +207,6 @@ In short, we found that using all layers works better than just picking one. Sin
     \caption{Final results -- Pearson correlation}
     \label{fig:final-reslts}
 \end{figure}
-
-
-% Results: What constitutes “success?”
-%     What experiments did you run?
-%     For most of our assignments, we have looked at the accuracy of the model. Does the notion of “accuracy” apply for your project, or is some other metric more appropriate?
-%     Explain how you assess your model's performance and justify why it is a reasonable measurement.
 
 \section{Ethics}
 % Ethics: Choose 2 of the following bullet points to discuss; not all questions will be relevant to all projects so try to pick questions where there’s interesting engagement with your project. (Remember that there’s not necessarily an ethical/unethical binary; rather, we want to encourage you to think critically about your problem setup.)
@@ -266,12 +260,6 @@ Maybe both??
 Increasing the bottleneck was the only way to improve performance, deeper didn't matter, suggesting the bottleneck was meaningful
 
 \section{Reflection}
-% Reflection: please address the following questions (along with other thoughts you have about the project, if any):
-%     How do you feel your project ultimately turned out? How did you do relative to your base/target/stretch goals?
-%     Did your model work out the way you expected it to?
-%     How did your approach change over time? What kind of pivots did you make, if any? Would you have done differently if you could do your project over again?
-%     What do you think you can further improve on if you had more time?
-%     What are your biggest takeaways from this project/what did you learn?
 We're very happy with how this project turned out. There were a couple of scares here and there (one horrible incident of accidentally swapping our train and test sets for a few days comes to mind) but overall the performance we reached was significantly past our goal and we learned an incredible amount. We're quite proud of how we were able to take such a weak model and turn it around into a, though not state of the art, mostly capable STS model.
 
 At the start of this project we made a pact to try and be principled with each decision that came our way. For example, we made it a rule to never just make a model deeper or wider for no reason. We tried to stay as minimal as possible throughout the whole project and we feel that paid off. We believe that every decision in our architectural design process (Mostly described in Section \ref{Architecture}) had good and clear motivation. We're also incredibly proud of our experimentation and overall scientific process.
