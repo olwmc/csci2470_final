@@ -260,16 +260,16 @@ We ran many, many hyperparameter experiments on the autoencoders and did not fin
 
 A natural extension to our work would be to try a larger and more capable base model. Our initial experiments used \verb|qwen2-0.5B|, which performed significantly better than \verb|gpt2-medium| on both Pearson and Spearman correlation (\verb|+~2%| on both). However, this gap disappeared once we made the changes to the loss function described in Section \ref{Loss}. After rerunning the experiments with both base models and the new loss function, we found no meaningful difference between the two despite \verb|qwen2-0.5B|'s additional parameters. This likely suggests a limitation in our experimental setup for qwen2, given that we simply substituted the base model in our original architecture and only adjusted the input dimension of the autoencoders to match. A more thorough investigation of larger models would require architectural changes tailored to their specific parameter counts. We just wanted to assure that our approach was not uniquely suitable for \verb|gpt2-medium|.
 
-\subsection{\textit{"Why did increasing the bottleneck work"}}
-Couple of weird things here
+% \subsection{\textit{"Why did increasing the bottleneck work"}}
+% Couple of weird things here
 
-Loss COULD be explained by exponentially larger norms as layers go on
+% Loss COULD be explained by exponentially larger norms as layers go on
 
-COULD ALSO be explained by harder compression problem
+% COULD ALSO be explained by harder compression problem
 
-Maybe both??
+% Maybe both??
 
-Increasing the bottleneck was the only way to improve performance, deeper didn't matter, suggesting the bottleneck was meaningful
+% Increasing the bottleneck was the only way to improve performance, deeper didn't matter, suggesting the bottleneck was meaningful
 
 \section{Reflection}
 We're very happy with how this project turned out. There were a couple of scares here and there (one horrible incident of accidentally swapping our train and test sets for a few days comes to mind) but overall the performance we reached was significantly past our goal and we learned an incredible amount. We're quite proud of how we were able to take such a weak model and turn it around into a, though not state of the art, mostly capable STS model.
