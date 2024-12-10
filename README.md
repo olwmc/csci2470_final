@@ -1,8 +1,5 @@
 # csci2470_final
-Metric learning for a brighter future
-
-Download activation data [here](https://drive.google.com/drive/folders/1LhINDDAmJZrvKMafVMSEjkbGgEQgFl93?usp=drive_link) or compute it yourself in the `generate_activations` notebook. Expect
-generating it to take > 15 minutes.
+Download activation data [here](https://drive.google.com/drive/folders/1LhINDDAmJZrvKMafVMSEjkbGgEQgFl93?usp=drive_link) or compute it yourself in the `generate_activations` notebook. Expect it to take a while to generate.
 
 ## Notebook descriptions
 - `generate_activations.ipynb`  Generates and saves the activations for each sentence in the STS dataset passed through `gpt2-medium`
