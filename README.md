@@ -3,7 +3,7 @@
 See the final paper for a full description of the project.
 
 ### Data
-Download activation data [here](https://drive.google.com/drive/folders/1LhINDDAmJZrvKMafVMSEjkbGgEQgFl93?usp=drive_link) or compute it yourself in the `generate_activations` notebook. Expect it to take upwards of 5 hours to generate.
+Download activation data [here](https://drive.google.com/drive/folders/1LhINDDAmJZrvKMafVMSEjkbGgEQgFl93?usp=drive_link) or compute it yourself in the `generate_activations` notebook. Expect it to take several hours to generate.
 
 ### Notebook descriptions
 - `Pretraining-data-gen.ipynb`  Generates and saves the activations for each of the 20,000 sentences extracted from GenericsKB and passed through qwen2
