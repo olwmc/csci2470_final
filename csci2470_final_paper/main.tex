@@ -1,5 +1,6 @@
-\documentclass[14pt, twocolumn]{article}
-\usepackage[margin=0.5in]{geometry} 
+\documentclass{article}
+\usepackage[final]{neurips_2023}
+% \usepackage[margin=0.5in]{geometry} 
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{graphicx}
 \usepackage{colortbl}
@@ -19,8 +20,8 @@
 
 \title{FREEZE!: Pretrained Language Models as Frozen Feature Extractors for Semantic Tasks}
 \author{
-    Hayden McDonald\\hayden\_mcdonald@brown.edu \and 
-    Nicholas Marsano\\nicholas\_marsano@brown.edu\and 
+    Hayden McDonald\\hayden\_mcdonald@brown.edu \And
+    Nicholas Marsano\\nicholas\_marsano@brown.edu\And
     Oliver McLaughlin\\oliver\_mclaughlin@brown.edu
 }
 
@@ -28,40 +29,27 @@
 
 \maketitle
 
-% Title: Summarizes the main idea of your project.
-% Who: Names and logins of all your group members.
-
-\setcounter{tocdepth}{4}
-\setcounter{secnumdepth}{4}
-\tableofcontents
-\newpage
+\begin{abstract}
+    We investigate whether frozen language models can effectively serve as feature extractors for semantic tasks without any fine-tuning. By treating intermediate activations from different layers as independent sources of semantic information, we combine autoencoder pretraining with siamese networks to learn semantic representations. Using GPT2-medium as our base model, we achieve 76.86\% Pearson correlation on the Semantic Text Similarity Benchmark (STSB) using a model containing less than 7\% of GPT2-medium's parameter count. Our approach also produces an interpretable similarity measure for GPT2-medium's intermediate activations that aligns with human judgments of semantic similarity.
+\end{abstract}
+% \setcounter{secnumdepth}{4}
+% \tableofcontents
 
 \section{Introduction}
-% Introduction: What problem are you trying to solve and why?
-%     Detail how you arrived at this topic and what motivated you.
-%     What kind of problem is this? Classification? Regression? Structured prediction? Reinforcement Learning? Unsupervised Learning? etc.
-Our project is an investigation into a few related areas. In short, we wanted to see if we could develop an architecture that could take the intermediate activations of a pre-trained decoder-only large language model (Henceforth LLM) and use them to do text-embedding tasks. We chose semantic sentence similarity (STS) as our primary focus and motivation because of its simplicity. This task involves training a model to rate the semantic similarity of a pair of sentences. Importantly, in contrast to most other work using LLMs for text embedding, we are \textit{not} fine-tuning the model. We are simply taking a subset of the intermediate activations and treating them as a kind of \textit{"feature extracted"} (frozen) representation.\\\\
+Our project is an investigation into a few related areas. In short, we wanted to see if we could develop an architecture that could take the intermediate activations of a pre-trained decoder-only large language model (Henceforth LLM) and use them to do text-embedding tasks. We chose semantic text similarity (STS) as our primary focus and motivation because of its simplicity. This task involves training a model to rate the semantic similarity of a pair of sentences. In contrast to most other work using LLMs for text embedding, we are \textit{not} fine-tuning the model, we are instead treating the model's intermediate activations as a frozen, \textit{"feature extracted"} semantic representation.
+
 We chose this idea for several reasons.
 \begin{enumerate}
-    \item Our original motivational question was: \textit{"Do ‘similar’ prompts (to human readers) have ‘similar’ (under some metric) representations to a given language model?"}. By training a sentence-similarity model on LLM activations, we believed we could make progress on answering this question by \textit{learning} a transformation of the activations that correlates to semantic similarity.
+    \item Our original motivational question was: \textit{"Do ‘similar’ prompts (to human readers) have ‘similar’ (under some metric) representations to a given language model?"}. Without transforming the latent representations, similarity measures like cosine similarity do not correlate strongly with \textit{human notions} of semantic similarity. This phenomenon is exemplified in Figure \ref{fig:raw-corr}.
 
-    \item \textit{If} we could train a small model to interpret a given LLM's activations and produce a useful text embedding (or set of embeddings) from them, we could skip costly fine-tuning and simply pre-train and fine-tune the small "interpreter" model. Pretrained small LLMs are cheap to do forward passes on and very plentiful, so if we could \textit{just} use the intermediate activations and not have to do backward passes we could get a lot of functionality for very little compute.
+    \item Small pretrained LLMs are cheap to do forward passes on and very plentiful. If we could extract useful text embeddings from their intermediate activations without fine-tuning the base model, we could get a lot of functionality for very little compute.
+
+    \item We also wanted to investigate the question: \textit{Do multiple intermediate activations perform better than just the last?} Typically when doing finetuning or transfer learning you remove the classifier end and use the last intermediate representation as your "feature extracted representation". We wanted to see if there was any performance benefit in using \textit{multiple layer's} worth of representation. This is clearly the case in the finetuning setting \cite{tang2024poolingattentioneffectivedesigns} but it was unclear to us if this would work in a frozen setting.
     
-    \item We also wanted to investigate the question: \textit{Do multiple intermediate activations perform better than just the last?} Typically when doing finetuning or transfer learning you remove the classifier end and use the last intermediate representation as your "feature extracted representation". We wanted to see if there was any performance benefit in using \textit{multiple layer's} worth of representation. This is clearly the case in the finetuning setting \cite{tang2024poolingattentioneffectivedesigns} but it's unclear if it will work here.
-    
-    \item From an interpretability standpoint, most distance or similarity measures (E.g cosine similarity) do not correlate strongly with \textit{human ideas} of similarity (Figure \ref{fig:raw-corr}). By training a similarity learner on LLM activations, grounded in human ideas of similarity, we hoped to produce a more interpretable measure of similarity for LLM activations.
-    
-    \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. \footnote{There was only one paper we could find doing a similar setup -- extracing latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}. There are many papers \textit{like} this one (\cite{lu2021pretrainedtransformersuniversalcomputation} comes to mind) but almost none completely freeze the entire model and "start from scratch" as we did here.} We're not really interested in \textit{what} information is \text{where}, we just want to see \textit{if it's useable} for a simple task like STS.
+    \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. \footnote{There was only one paper we could find doing a similar setup -- extracting latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}. There are many papers \textit{like} this one (\cite{lu2021pretrainedtransformersuniversalcomputation} comes to mind) but almost none completely freeze the entire model and "start from scratch" as we did here.}
     
 \end{enumerate}
-We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for study because Oliver was familiar with its architecture and it readily fit onto all of our GPUs. We also did minor experiments on \verb|qwen2-0.5B| (391M parameters). Moreover we chose \verb|gpt2-medium| because of its very low quality text generation ability. It was not at all a priori obvious to us that its representations would be fit for this task.
-
-\begin{figure}[!htb]
-    \centering
-    \includegraphics[width=1\linewidth]{raw_cosine_sim.png}
-    \caption{\textbf{The problem we are ultimately trying to solve}. Layerwise average correlation between gpt1-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
-    \label{fig:raw-corr}
-\end{figure}
+We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for study because Oliver was familiar with its architecture and it readily fit onto all of our GPUs. We also did minor experiments on \verb|qwen2-0.5B| (391M parameters). Moreover we chose \verb|gpt2-medium| because of its very low quality text generation ability and verifiably low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} (This paper tests the larger \verb|gpt2| base model which is more powerful. Our model is a smaller, less performant version of that). It was not at all a priori obvious to us that its representations would be fit for this task.
 
 \subsection{Problem Setup} \label{Setup}
 Figure \ref{fig:raw-corr} was our "starting point". This figure depicts the correlation between two important quantities for our investigation:
@@ -69,22 +57,33 @@ Figure \ref{fig:raw-corr} was our "starting point". This figure depicts the corr
     \item The cosine similarity of two sentences' latent representations (See \ref{latent} for more information on this representation)
     \item A human rated similarity score for those same two sentences (See \ref{STS-section})
 \end{enumerate}
-For each layer we computed the mean correlation between these two quantities for more than five thousand sentence pairs. This is essentially the problem we are trying to solve -- \textit{How can we transform these latent representations into something useable for semantic text similarity?}
+For each layer we computed the mean correlation between these two quantities for more than five thousand sentence pairs. This (low quality embeddings) is essentially the problem we are trying to solve -- \textit{How can we transform these latent representations into something useable for semantic text similarity?}
 
 \section{Related Work}
 % Related Work: Are you aware of any, or is there any prior work that you drew on to do your project?
 %     Please read and briefly summarize (no more than one paragraph) at least one paper/article/blog relevant to your project.
 Reusing pretrained LLMs for semantic tasks like STS is nothing new. There is extensive literature about finetuning and retraining
-these models for a variety of new tasks (CITE ME). Moreover using decoder-only models for embedding tasks is common, with works like
-SGPT (CITE ME), LLM2VEC, etc.\\\\
-It is well known that GPT-2 produces incredibly low quality embeddings (CITE ME. https://arxiv.org/pdf/1909.00512)
+these models for a variety of new tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, \cite{tang2024poolingattentioneffectivedesigns}. Moreover using decoder-only models for embedding tasks is common, with works like
+SGPT \cite{muennighoff2022sgptgptsentenceembeddings}, LLM2VEC \cite{LLM2Vec}, LLMEmbed \cite{LLMEmbed} etc. exploring this idea as well as "meta-techniques" for improving these embeddings like Mitchell et. al's paper on how repeating a given piece of text within a prompt improves downstream embedding performance after collecting a truncated subset of the generated latents \cite{RepImprovesLLM}. It is also well known that GPT-2 produces incredibly low quality embeddings \cite{ethayarajh2019contextualcontextualizedwordrepresentations} and even basic exploration shows that the smaller \verb|gpt2-medium| produces very low quality text generation.
+
+Our work also takes inspiration from Adapters \cite{houlsby2019parameterefficienttransferlearningnlp} and other parameter-efficient fine-tuning methods. Adapters provide an alternative to full model fine-tuning by inserting small feed-forward networks between a pretrained model's layers and training only these small sub-networks. The key insight Adapters exploit is that modifying how information flows between layers can adapt the model to new tasks without changing its core weights. This approach preserves the model's original capabilities while enabling task-specific optimization. 
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.65\linewidth]{raw_cosine_sim.png}
+    \caption{\textbf{The problem we are ultimately trying to solve}. Layerwise average correlation between gpt1-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
+    \label{fig:raw-corr}
+\end{figure}    
+
 
 \section{Data}
 We have three major datasets that we used for both pretraining and supervised STS training.
 \begin{enumerate}
-    \item STSB \cite{STS} -- A standard sentence similarity benchmark with associated training and test sets.
-    \item GenericsKB \cite{bhakthavatsalam2020genericskbknowledgebasegeneric} -- A 'generic sentence' dataset of which we used twenty-thousand examples.
-    \item SNLI \cite{snli} -- An inference relation dataset. Used in a pretraining experiment and in Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing}
+    \item STSB \cite{STS} -- A standard sentence similarity benchmark with associated training and test sets. The sentence data is scraped from articles and news headlines and was rated by humans for their semantic similarity.
+
+    \item GenericsKB \cite{bhakthavatsalam2020genericskbknowledgebasegeneric} -- A 'generic sentence' dataset of which we used twenty-thousand examples. These sentences are varied in length and content and serve as our baseline distribution of sentence data.
+
+    \item SNLI \cite{snli} -- An inference relation dataset. Used in a pretraining experiment and in Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing}. Most relevant to our discussion is that this dataset was used as a pretraining task in the Sentence-BERT paper \cite{reimers2019sentencebertsentenceembeddingsusing}.
 \end{enumerate}
 
 \subsection{Semantic Text Similarity Benchmark (STSB)} \label{STS-section}
@@ -92,10 +91,12 @@ The main task we targeted was STSB \cite{STS}, which is a benchmark for semantic
 $$
 (\text{s1='A plane is taking off.'}, \text{s2='An air plane is taking off.'}, \text{sim}=1.0)
 $$
-The performance metrics for STS are typically Spearman's rank correlation coefficient and normal Pearson correlation between the predicted similarities of pairs of sentences and the human rated similarities. State of the art for this task is around \verb|90 - 92%| in both spearman and pearson according to the MTEB leaderboard \cite{muennighoff2022mteb}.
+The performance metrics for STS are typically Spearman's rank correlation coefficient and Pearson correlation between the predicted similarities of pairs of sentences and the human rated similarities. State of the art for this task is \verb|90 - 93%| in both spearman and pearson according to the MTEB leaderboard as of the writing of this document \cite{muennighoff2022mteb}.
 
 \subsection{Data Collection and Pipeline} \label{latent}
-Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a feature extractor, so for each piece of text for any task, we simply pass that text through the model and extract a latent representation from the intermediate activations at each layer. We chose to take the \textit{last token at each layer, after the residual connection} (Henceforth called a \textit{latent}). This strategy is not original and is fairly standard in the \textit{fine tuning} literature \cite{LLMEmbed}. We expected it to do fine for our task given that \verb|gpt2-medium| uses causal attention, even though we're not fine tuning. This gives us, for each sentence, twenty-four \verb|1024| dimensional vectors (\verb|n_layers x d_model|). One of the main challenges we wanted to overcome by taking this project on was finding a sensible way to \textit{actually use} such a high volume and dimensionality of data.
+Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a feature extractor, so for each piece of text for any task, we simply pass that text through the model and extract a latent representation from the intermediate activations at each layer. We chose to take the \textit{last token at each layer, after the residual connection} (Henceforth called a \textit{latent}). This strategy is not original and is fairly standard in the \textit{fine tuning} literature \cite{LLMEmbed}. We expected it to do fine for our task given that \verb|gpt2-medium| uses causal attention (and thus the last token has "seen" all of the previous tokens), even though we're not fine tuning. This gives us, for each sentence, twenty-four \verb|1024| dimensional vectors (\verb|n_layers x d_model|, \verb|gpt2-medium| has twenty-four layers). One of the main challenges we wanted to overcome by taking this project on was finding a sensible way to \textit{actually use} such a high volume and dimensionality of data.
+
+We found no benefit from normalizing our activation data (I.e. center and then scale to unit variance) so we decided to not do so in our final model training. Rerunning our analysis confirms that external data normalization does not increase performance in our task (Likely due to the layer normalization employed by our autoencoders).
 % Data: What data are you using (if any)?
 
 %     If you’re using a standard dataset (e.g. MNIST), you can just mention that briefly. Otherwise, say something more about where your data come from (especially if there’s anything interesting about how you will gather it).
@@ -105,55 +106,126 @@ Our data pipeline is fairly simple. We're treating \verb|gpt2-medium| as a featu
 % Methodology: What is the architecture of your model?
 %     How are you training the model?
 %     Justify your design. Also note some things you tried that may or may not have worked.
+The key insight behind our approach is that different layers in transformer models encode distinct types of information, with each layer potentially discarding or transforming information from previous layers as it builds towards its final objective. This idea is most clearly shown in Anthropic's work on Sparse Autoencoders for interpretability of LLMs \cite{bricken2023monosemanticity} wherein different layers are shown to possibly be responsible for representing different and specific information.
+
+Rather than relying solely on the final layers, we hypothesized that earlier layers might contain valuable semantic features that get discarded or transformed as information propagates through the model. This idea is most clearly shown in Figure \ref{fig:raw-corr}, where the final layers of \verb|gpt2-medium| perform worst for STS.
+
+Our approach treats each layer's representational space as fully independent sources of semantic information. This is in contrast to methods like Adapters \cite{houlsby2019parameterefficienttransferlearningnlp} which must maintain the original model's information flow. While Adapters can only modify how information passes between layers, our method can directly access and utilize the unique semantic information present at each layer.
+
 \subsection{Training and Loss function} \label{Loss} \label{Training}
 Our general training scheme was the following:
 \begin{enumerate}
-    \item Pass whatever example sentence for the current task through \verb|gpt2-medium|
-    \item Extract the latents (Described in Section \ref{latent}) from each layer. We take these latents and completely decouple them from the base model. They are effectively just a set of vector representations of the input. No gradient is passed back through \verb|gpt2-medium|
+    \item Pass a given piece of text through \verb|gpt2-medium|.
+    \item Extract the latents (Described in Section \ref{latent}) from each layer. We take these latents and completely decouple them from the base model. In our actual experiments we pre-computed all of these latents and saved them to disk.
     \item Pass those latents into our model.
 \end{enumerate}
-Our loss function for supervised STS training departs from the traditional mean squared-error (MSE) in that we only try and minimize the \text{variance of the residuals}, instead of the traditional variance \text{and} bias which are both minimized when using MSE.
+To train our model to do STS we pass in both pairs of sentences to \verb|gpt2-medium| as described above, pass those latent vectors into our model and extract a scalar similarity value. This allows us to do supervised similarity learning using the STSB dataset.
 
-\subsection{Architecture}
+\subsubsection{Loss function}
+Our loss function evolved throughout our experiments. Initially, we used mean squared-error (MSE) loss between the predicted similarities for a sentence pair and the human-rated similarities from the STSB dataset. For our final model, however, our loss function for supervised STS training departs from traditional MSE in that we only minimize the \text{variance of the residuals}, instead of both variance \text{and} bias which are traditionally minimized when using MSE. 
+
+Empirically we found that our residuals centered themselves near zero even though we didn't enforce this directly. We also found that taking the log of this value improved training stability and overall performance. We attribute this to the fact that the sample variance of a given set of residuals itself has high variance and thus the log term stabilizes gradients and overall training. 
+
+Our final loss function is then as follows:
+$$
+\mathcal{L}(\theta) = \log(\text{Var}(y_\theta - y))
+$$
+Where $y_\theta$ is the predicted similarity scores and $y$ is the ground truth. We only saw meaningful improvement with this new loss metric on the final architecture, so our experimental results reported for all but the last model used MSE.
+
+\subsection{Architecture} \label{Architecture}
 Our architecture was decided through a series of experiments and trial and error. We tried to only make architectural decisions which were, in some way, \textit{principled} -- I.e. we had a decent reason for making that particular change.
 
-\subsection{First iteration}
-Our first architecture was incredibly simple -- Just take the layerwise cosine similarities described in Section \ref {Setup} and pass them through an MLP to do basic weighting and statistical correlation. We felt this was reasonable because although the individual correlations were quite weak, it wasn't clear to us that each layer was correlating \textit{to the same content}. In the same way that many weak models can be combined to create a strong one, we figured that a simple MLP would be able to decipher some of the more complicated relationships, even just through the layerwise similarities. This model was quite simple, just a one layer mlp that took the twenty-four layerwise cosine similarities from \verb|gpt2-medium|'s respective latents and outputted a sigmoided single scalar. This was trained using the scheme described in Section \ref{Training}. This model significantly improved upon baseline, giving us a test set pearson correlation of \verb|39.2%| and spearman of \verb|42.06%| ($p<< 0.001$)
+\subsubsection{Activation Choice}
+For every experiment detailed here we chose to use GELU as our activation function. Our rational for this is that our base model \verb|gpt2-medium| uses GELU, so it's likely that its representation relies on the shape and quirks of that activation function. We did some experiments with other activation functions and found worse performance, suggesting that using other activation functions might waste parameters on "replicating" GELU-like transformations.
 
-\subsection{Layerwise Siamese Networks}
-After the previous architectural experiment, we figured that we were probably bottlenecked by the representation of our base model, necessitating a transformation. Inspired by prior work on Siamese networks for semantic tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, we decided to modify our architecture by applying siamese networks to each layer, computing the cosine similarities of \text{those} representations, and then finally passing those cosine similarities into a weighting/pattern matching MLP as described above. The intuition here is that each layer probably contains meaningfully different and useful information, as evidence by weighted cosine doing better than any particular layer. So, if we learn a nonlinear transformation of each layer's particular space through supervised STS training, we might be able to extract a better representation for this task and have overall better downstream performance.\\\\
+\subsubsection{First iteration}
+Our first architecture was incredibly simple -- Just take the layerwise cosine similarities described in Section \ref {Setup} and pass them through an MLP to do basic weighting and statistical correlation. We felt this was reasonable because although the individual correlations were quite weak, it wasn't clear to us that each layer was correlating \textit{to the same content}. In the same way that many weak models can be combined to create a strong one, we figured that a MLP would be able to decipher some of the more complicated relationships, even just through the layerwise similarities. 
+
+For this first iteration we used a two layer MLP (We did not find better performance with deeper models) that took the twenty-four layerwise cosine similarities from \verb|gpt2-medium|'s respective latents and outputted a sigmoided single scalar. This was trained using the scheme described in Section \ref{Training}. This model significantly improved upon baseline, giving us a test set pearson correlation of \verb|39.2%| and spearman of \verb|42.06%| ($p<< 0.001$)
+
+\subsubsection{Layerwise Siamese Networks}
+After the previous architectural experiment, we figured that we were probably bottlenecked by the representation of our base model, necessitating a transformation. Inspired by prior work on Siamese networks for semantic tasks \cite{reimers2019sentencebertsentenceembeddingsusing}, we decided to modify our architecture by applying siamese networks to each layer, computing the cosine similarities of \text{those} representations, and then finally passing those cosine similarities into a weighting/pattern matching MLP as described above. The intuition here is that each layer probably contains meaningfully different and useful information, as evidence by weighted cosine doing better than any particular layer. So, if we learn a nonlinear transformation of each layer's particular space through supervised STS training, we might be able to extract a better representation for this task and have overall better downstream performance.
+
 This architecture achieved a \text{significant} performance increase, moving our pearson and spearman on the test set to \verb|71.63%| and \verb|69.72| ($p << 0.001$) respectively.
 
-\subsection{Autoencoder pretraining and the final model}
-We then realized that although this architecture was traning quite well, it was likely the case that inputs which were significantly different from those in the input distribution would likely not be well represented by our siamese networks. This then inspired us to change our training strategy. Our current strategy \text{coupled} our representation learning and our supervised STS learning. That is, the model had to both learn a good representation of the input whilst also learning how to orient examples spatially to reflect semantic similarity. We then decided to break this up by first training a set of layerwise autoencoders over twenty-thousand "generic" sentences from the GenericsKB \cite{bhakthavatsalam2020genericskbknowledgebasegeneric} dataset. These senteces were similar in length and complexity to the STS training set that we felt it was an appropriate 'pretraining' dataset. We trained the autoencoders to reconstruct each layer's latent for each sentence (I.e. twenty-four autoencoders, each trying to reconstruct their respective layer's latent). We then did this pretraining and took the encoder part of each autoencoder and treated it as our new siamese network. Each autoencoder had a bottleneck of $256$ hidden units.\\\\
-Immediately, our results were \textit{indistinguishable} from the results of the previous section. We then produced Figure (PUT FIGURE) and realized that the layerwise losses for each autoencoder increased exponentially as the layers went on. This inspired us to, among many other things, widen the bottleneck of the last twelve autoencoders from $256$ to $512$. This then finally showed a performance increase to \verb|75.36%| pearson and \verb|73.21%| spearman. Our final change was to incorperate the loss function switch described in Section \ref{Loss}, which brought us to a final pearson and spearman correlation of:
+\subsubsection{Autoencoder pretraining and the final model}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{model-diagram.jpg}
+    \caption{Final Model Diagram}
+    \label{fig:model-diagram}
+\end{figure}
+
+We then realized that although this architecture was training quite well, it was likely the case that inputs which were significantly different from those in the input distribution would likely not be well represented by our siamese networks. This then inspired us to change our training strategy. Our current strategy \text{coupled} our representation learning and our supervised STS learning. That is, the model had to both learn a good representation of the input whilst also learning how to orient examples spatially to reflect semantic similarity. We then decided to break this up by first training a set of layerwise autoencoders over twenty-thousand "generic" sentences from the GenericsKB \cite{bhakthavatsalam2020genericskbknowledgebasegeneric} dataset. These sentences were similar in length and complexity to the STS training set that we felt it was an appropriate 'pretraining' dataset. We trained the autoencoders to reconstruct each layer's latent for each sentence (I.e. twenty-four autoencoders, each trying to reconstruct their respective layer's latent). We then did this pretraining and took the encoder part of each autoencoder and treated it as our new siamese network. Each autoencoder had a bottleneck of $256$ hidden units.
+
+Immediately, our results were \textit{indistinguishable} from the results of the previous section. We then produced Figure \ref{fig:autoencoder-loss} and realized that the layerwise losses for each autoencoder increased exponentially as the layers went on. This inspired us to, among many other things that did not work, widen the bottleneck of the last twelve autoencoders from $256$ to $512$. This then finally showed a performance increase to \verb|75.36%| pearson and \verb|73.21%| spearman. Our final change was to incorporate the loss function switch described in Section \ref{Loss}, which brought us to a final pearson and spearman correlation of:
 \begin{align*}
     &\text{Pearson} = 76.86\%\\
     &\text{Spearman} = 75.03\%\;,\; p << 0.001
 \end{align*}
-Moreover, this architecture actually ended up with more than $600,000$ fewer parameters when compared to our previous best model.
+Moreover, this architecture actually ended up with more than $600,000$ fewer parameters when compared to our previous best model. Importantly, the \textit{only} way we saw an increase in downstream performance, after many hyperparameter experiments and automated tuning, was to \textit{widen the bottleneck at the later layers}. This heavily suggests that the information present at later latent vectors is not only much richer (And thus requiring many more bases to represent) but also incredibly important for semantic tasks. Critically, \textit{deepening} the autoencoders \textit{did not improve downstream performance}, even though doing so added millions of parameters. Only widening the bottleneck improved performance. Our model is depicted in Figure \ref{fig:model-diagram}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{encoder_loss.png}
+    \caption{Autoencoder loss by layer. $\text{d}_\text{bottleneck} = 256$}
+    \label{fig:autoencoder-loss}
+\end{figure}
 
 \subsection{Experiments that failed}
 
+\paragraph*{Alternate Latent Choice}
+We tried several choices of latent including mean and sum pooled accross all of the tokens at each layer. We found significantly worse performance from either approach. Intuitively this makes sense, only the last token has a "full picture" of the input and polluting that token with others would surely decrease performance. 
 
-% Our loss function has evolved significantly since the beginning. We plotted the distribution of our residuals and noticed
-% the spread could be tightened. Since this is a correlative task, we don't care about bias, just variance. So instead of doing MSE
-% we just optimize to minimize the variance of the residuals directly
-% $$
-% \mathcal{L}(\theta) = \log(\text{Var}(y - \hat{y}))
-% $$
-% Where the added log improved stability
+\paragraph*{Hyperparameter Optimization}
+We ran several hyperparameter optimization/search runs on the autoencoders changing everything from their depth, dropout rate, width, etc. and found absolutely no benefit in downstream performance (Despite significant effort). We tried both manual approaches and automated approaches using Optuna. Interestingly, we \textit{did} see improvements in our autoencoder loss but did not see any downstream benefit -- Suggesting our informational bottleneck is either the incoming latents or the architecture itself.
+
+\paragraph*{SNLI Pretraining}
+Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing} pretrained its siamese networks on the SNLI \cite{snli} relation task to great benefit. We tried this with our layerwise approach and found success in the SNLI task but no downstream benefits for STS.
+
+\paragraph*{Pooling and attention mechanisms}
+We tried several schemes for pooling or otherwise combining both the latent representations coming from \verb|gpt2-medium| and our learned representations. One pooling strategy we tried (Inspired by the 'semantic subspaces' idea of Bolukbasi et. al \cite{bolukbasi2016mancomputerprogrammerwoman}) in the hopes of creating a single unified embedding was modifying the autoencoder training to instead of having twenty-four individual vectors to decode, we simply up-projected each encoder's bottlenecked output and summed accross each layer. This gave us a single high dimensional vector which we then fed into each "decoder", which was was trained to reconstruct the original layer's embedding from the unified one. The idea was that the unified representation would be encouraged to reuse subspaces to carry each layer's individual information so that it could be appropriately decoded. This model performed worse than our best model with a Pearson correlation of roughly \verb|60%|. We do believe, though, that this scheme is probably the way forward if we want to expand to other tasks.
+
+We also experimented with some of the attention and attention pooling strategies outlined in Tang et. al \cite{tang2024poolingattentioneffectivedesigns}. This did not do well when pooling either the original latents, nor the learned autoencoded representations.
+
+\paragraph*{Fake Data}
+At one point we were wondering if we just simply didn't have enough examples of semantically similar sentences to break our best score, so we tried a few data generation strategies to see if we could mitigate this problem. Most notably we tried adding a little bit of noise to the activations to see if the model would generalize better -- It didn't. We also tried modifying the prompts to change words or capitalization (To see if the difference in tokenization would change anything) -- It didn't.
 
 \section{Results}
 \subsection{Requirements for success}
-Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal
+Our main notion of success was performance on the STSB \cite{STS} benchmark as described in Section \ref{STS-section}. Pearson/spearman correlation are both reasonable measures of success on this task because they measure how consistent your model is with human-rated similarity notions, regardless of scale or center. State of the art on this task is \verb|90-92%| for both Spearman and Pearson correlation as of the writing of this document \cite{muennighoff2022mteb}. Our goal was to achieve at least \verb|60%| pearson correlation. We really did not have strong reasoning for why this might be a reasonable goal but preliminary results showed that at least \verb|40%| was possible so we decided that \verb|60%| was a reasonable stretch goal.
 
 \subsection{Final Results}
-We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|.
-% Results: What constitutes “success?”
-%     What experiments did you run?
-%     For most of our assignments, we have looked at the accuracy of the model. Does the notion of “accuracy” apply for your project, or is some other metric more appropriate?
-%     Explain how you assess your model's performance and justify why it is a reasonable measurement.
+We achieved a Pearson correlation on STSB's test set of \verb|76.86%| \footnote{We were able to score up to $77.1\%$ but were unable to consistently reproduce it. The score we report here is the one in our notebook.} and a Spearman correlation of \verb|75.3%| with a p-value of significantly less than \verb|0.0001|. Ablation studies confirm both the utility of the unsupervised pretraining and the benefit of using multiple layers\footnote{Doing meaningful ablation studies on our setup is difficult because our model is designed to train using multiple latents at a time. We tried just training a normal single-latent model and in every case performance suffered. That being said, to fully decide whether 'multiple layers are better than just one' would require investing significant time into tuning our setup to use a single latent. At least in this setup, we consistently found performance decreases when ablating any of the latents. Section \ref{answering-questions} offers more insight into this question.}, in either case removing that step (or any layer) decreases performance. Our results are summarized in Figure \ref{fig:final-reslts}. Our model's errors on the test set are quite favorably distributed, Figure \ref{fig:residuals} shows that the vast majority are centered near zero ($\mu = .06$, $\sigma = 0.197$) and the Q-Q plot shows that our model is distributed relatively symmetrically with thin tails, indicating no major over or underprediction. Contrary to our intuition, changing our loss function back to MSE did not bring the center of our residuals to closer to zero but instead just increased the variance.
+
+We also performed some qualitative analysis on the highest error predictions (See Section \ref{error analysis} for more details) and note that although or model performs moderately well on the benchmark, it has clear and unavoidable limitations. Most notably, it has trouble distinguishing semantic and syntactic similarity and it did not learn to recognize identical sentences. Despite these limitations, we still consider our results a success because of our performance on STSB. Even though \textit{some} of our model's predictions are quite bad, the vast majority of them are quite good, hence our STSB performance.
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=.90\linewidth]{residuals.png}
+    \caption{Density histogram and Q-Q plot of final model errors}
+    \label{fig:residuals}
+\end{figure}    
+
+
+\subsection{Answering Our Original Questions} 
+\subsubsection{\textit{Do 'similar' prompts have \ 'similar' representations?}}
+Our results suggest that, yes, under a particular transformation (our model), \verb|gpt2-medium|'s latents do in fact correlate strongly with human notions of similarity. This implies that all of the necessary information to produce a decent sentence similarity model is encoded within the latent representations of the base model.
+
+\subsubsection{\textit{Do multiple layers perform better than just the last one?}} \label{answering-questions}
+This question was particularly interesting to us becuase if multiple layers did in fact perform better than just the final one, it would say quite a lot about the importance of information being lost during a forward pass.
+
+In short, we found that using all layers works better than just picking one. Single-layer versions of our model (keeping the same architecture but only using one layer) performed notably worse, reaching only \verb|71%| correlation. At first, this seemed like a meaningful comparison, but we later realized it's not particularly informative - our full model has 24 times more parameters than the single-layer version, and more importantly, if some layers weren't useful, the model could simply \textit{learn to ignore them}. We now view the choice of which layers to include as just another hyperparameter to tune, rather than a fundamental architectural decision.
+
+Interestingly, Figure \ref{fig:raw-corr} shows that the last latent in the residual stream was essentially \textit{useless} for this task. This may suggest that previous evaluations of GPT-2 for embedding tasks, among others, may be fundamentally limited by their choice of latent.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.85\linewidth]{final_results.png}
+    \caption{Final results -- Pearson correlation}
+    \label{fig:final-reslts}
+\end{figure}
 
 \section{Ethics}
 % Ethics: Choose 2 of the following bullet points to discuss; not all questions will be relevant to all projects so try to pick questions where there’s interesting engagement with your project. (Remember that there’s not necessarily an ethical/unethical binary; rather, we want to encourage you to think critically about your problem setup.)
@@ -164,219 +236,128 @@ We achieved a Pearson correlation on STSB's test set of \verb|76.86%| and a Spea
 %     How are you planning to quantify or measure error or success? What implications does your quantification have?
 %     Add your own: if there is an issue about your algorithm you would like to discuss or explain further, feel free to do so.
 
-\section{Reflection}
-% Reflection: please address the following questions (along with other thoughts you have about the project, if any):
-%     How do you feel your project ultimately turned out? How did you do relative to your base/target/stretch goals?
-%     Did your model work out the way you expected it to?
-%     How did your approach change over time? What kind of pivots did you make, if any? Would you have done differently if you could do your project over again?
-%     What do you think you can further improve on if you had more time?
-%     What are your biggest takeaways from this project/what did you learn?
+\subsection{Societal Impacts of our Approach}
+A critical ethical consideration in our work is that by using frozen LLM representations as our foundation, we inevitably inherit and potentially amplify any biases present in the base model. GPT-2-medium was trained on a broad internet corpus which likely contains various societal biases around gender, race, religion, and other sensitive topics. When we extract and transform its intermediate representations, we're not just capturing neutral semantic information - we're working with representations that may encode these problematic biases.
 
-One big takeaway from this project is that as gigantic open source LLMs become more pevalent, it might be possible to chop off most of their layers and train little "interpreter" modules as we did here to leverage the incredibly rich and complex learned represenations at a fraction of the cost and computation time.
+This issue connects to broader concerns about the responsibility of building on top of existing AI systems. While our approach is more computationally accessible than fine-tuning large models, this accessibility comes with the ethical burden of potentially propagating problematic biases to a wider range of applications. Future work should investigate methods for identifying and mitigating these inherited biases while preserving useful semantic information.
+% One critical ethical consideration in our work is the inherent subjectivity and potential bias in how "semantic similarity" is defined and measured. The STSB dataset represents a single operationalization of semantic similarity based on human annotator judgments, but these judgments embed specific cultural, linguistic, and contextual assumptions that may not be universal.
+
+% For example, when our model rates news headlines about different LGBT rights bills as highly similar (while STSB assigns them low similarity scores), it raises questions about what aspects of meaning we prioritize in similarity judgments. Should we focus on specific details (different locations, different bills) or broader themes (civil rights legislation)? These aren't just technical questions - they reflect deeper assumptions about what makes text "meaningfully" similar, assumptions that can vary significantly across different cultures, professional contexts, and use cases.
+
+% This bias in similarity measurement has real implications. Models trained on STSB will inherit its particular view of semantic similarity, which could lead to systematic biases when deployed in real-world applications. A legal analysis tool might inappropriately cluster distinct legal concepts, or a content recommendation system might fail to recognize meaningful similarities across different cultural contexts. By treating semantic similarity as a single scalar value rather than acknowledging its multi-dimensional and context-dependent nature, we risk creating systems that impose one particular view of linguistic similarity on diverse user populations.
+
+% This concern connects to broader issues of representation and power in AI systems - who gets to define what counts as "similar," and whose conceptual frameworks are being encoded into our models? While our technical approach shows promise, these questions remind us that seemingly objective metrics like semantic similarity scores often embed subjective human judgments that deserve careful ethical consideration.
+
+% There are two main societal impacts of this project. First, it addresses the relatively high barrier of entry for STS tasks by showing promise in lightweight methods that bypass the need for resource-intensive fine-tuning. This bypass offers a glimpse into the democratization of advanced NLP capabilities for researchers or organizations with limited computational resources. As more LLMs become open source, the barrier of entry to leverage them in practical applications can be lowered and allow for more innovation in smaller-scale environments. Second, the project addresses the advancement of model interpretability to increase trust in deployed models. By training an architecture to derive meaningful embeddings from intermediate activations, it contributes to the broader understanding of how LLMs encode semantic information. By helping to bridge the gap between machine representation and human comprehension, this project helps to further AI transparency as it plays a more dominant role in everyday life. 
+
+\subsection{Why is Deep Learning a good approach?}
+Deep learning is particularly well-suited for our project because we're trying to make sense of LLM intermediate activations - complex, high-dimensional representations that are notoriously difficult to interpret by human analysis alone. Just as we use machine learning to find patterns in large datasets, we can use it to discover meaningful patterns in these internal model representations. Additionally, our approach demonstrates that we can extract useful capabilities from smaller models rather than always requiring larger, more computationally expensive ones. This pushes back against the trend of achieving better performance simply by scaling up model size and instead shows how targeted applications of smaller models can advance the field in meaningful ways.
+
+However, there's an inherent irony in our approach: while attempting to create an interpretable measure of similarity for LLM activations, we've added another layer of complexity through our own neural networks. Though we succeeded in creating a useful similarity measure, we did so by essentially trading one black box for another. This highlights a fundamental tension in modern deep learning - sometimes making systems more capable can come at the cost of making them less interpretable. We expect this to become a fundamental problem in interpretability over the coming years. As models gain capability, we need a similar level of capability to understand them and with capability (in our current paradigm) comes further obfuscation.
+
+\section{Discussion}
+
+\subsection{\textit{"What did the model learn?"}}
+An interesting question to ask here is \textit{What kind of semantic similarity did our model learn?} Although STSB has a particular idea of semantic similarity (Namely, that two sentences 'mean' the same thing), true \textit{"semantic similarity"} is not limited to just identical ideas being expressed in different ways. We could easily define semantic similarity to be in regards to the abstract character of the sentences, or of the \textit{ideas} they are conveying. For example, STSB labels the \textit{"semantic similarity"} of the following sentences as \verb|20%|:
+\begin{verbatim}
+    'Hawaii passes gay marriage bill', 'US Senate passes gay workers bill',
+\end{verbatim}
+Our model labels them at \verb|75.98%|. Which is \textit{"more"} correct? Although the literal content of the two sentences is different, they are quite similar in what they are conveying -- Bills being passed regarding LGBT civil rights. There are numerous examples exactly like this one. One weaker example is:
+\begin{verbatim}
+    'You will want to clean the area first.',
+    'You will also want to remove the seeds.',
+\end{verbatim}
+Which STSB has rated at a similarity of \verb|0%|. Our model is less conservative in its estimate at \verb|56.01%|. Neither interpretation is wrong and clearly our model makes obvious and unavoidable errors (See Section \ref{error analysis} for more details) but in many contexts -- such as following steps in a recipe -- these sentences could be functionally identical, both indicating preparatory steps in a sequence.
+
+This raises deeper questions about the nature of semantic similarity itself. Two humans, given different contexts or purposes (e.g., legal analysis vs. historical study), might rate these sentences quite differently. Our model's architecture, processing information across multiple transformer layers, may naturally capture these various levels of similarity -- from surface-level linguistics to broader themes. Of course this does not distract from the fact that our model is nowhere near state of the art, but it is a worthwhile question to ask either way. Clearly our training produced \textit{a particular interpretation of semantic similarity}, but which was it? Excluding clear errors, of course. We offer more insight into this in Section \ref{error analysis}.
+
+\subsection{\textit{"What did we actually create?"}} \label{pathways}
+Although our original motivation was in the vein of interpretability, our approach combines several potentially useful components:
+\begin{itemize}
+    \item A layerwise-independent\footnote{As opposed to Adapters, which are layerwise \textit{dependent}.} parameter-efficient approach to adapting existing LLMs to sentence similarity without fine-tuning
+    \item A similarity measure for \verb|gpt2-medium|'s activations that aligns with human judgments of semantic similarity, potentially offering more interpretable insights into the model's representations
+    \item A representation learning scheme for LLM activations that preserves the base model's weights and information flow while enabling task-specific adaptation
+\end{itemize}
+While our performance does not match state-of-the-art models, these techniques might prove useful for understanding and utilizing frozen LLM representations in other contexts. Our technique is also quite parameter efficient, using less than seven percent of the base-model's total parameter count. In future work we aim to see how far these individual components can be improved. 
+
+\subsection{\textit{"What about a bigger base model?"} and the Representational Ceiling}
+We ran many, many hyperparameter experiments on the autoencoders and did not find any benefit (despite significant effort) in downstream performance beyond the aforementioned widening of the bottleneck at later layers. This suggests an important limitation of our setup -- \textit{The representational capability of our base model}. In the finetuning scenario the entire "representational machinery" of the base model is appropriated for the new task. Millions of parameters are modified and retuned to throw away useless information (wrt the task at hand) and prioritize information that improves performance on the new selected metric. In our situation, we are \textit{"stuck with"} whatever representation the original training for \verb|gpt2-medium| produced. Critically, this representation is not tuned for semantic similarity tasks, but for next token prediction. It is likely that these two objectives require substantially different representations (and thus contextual information) of the input to perform well at.
+
+A natural extension to our work would be to try a larger and more capable base model. Our initial experiments used \verb|qwen2-0.5B|, which performed significantly better than \verb|gpt2-medium| on both Pearson and Spearman correlation (\verb|+~2%| on both). However, this gap disappeared once we made the changes to the loss function described in Section \ref{Loss}. After rerunning the experiments with both base models and the new loss function, we found no meaningful difference between the two despite \verb|qwen2-0.5B|'s additional parameters. This likely suggests a limitation in our experimental setup for qwen2, given that we simply substituted the base model in our original architecture and only adjusted the input dimension of the autoencoders to match. A more thorough investigation of larger models would require architectural changes tailored to their specific parameter counts. We just wanted to assure that our approach was not uniquely suitable for \verb|gpt2-medium|.
+
+% \subsection{\textit{"Why did increasing the bottleneck work"}}
+% Couple of weird things here
+
+% Loss COULD be explained by exponentially larger norms as layers go on
+
+% COULD ALSO be explained by harder compression problem
+
+% Maybe both??
+
+% Increasing the bottleneck was the only way to improve performance, deeper didn't matter, suggesting the bottleneck was meaningful
+
+\section{Reflection}
+We're very happy with how this project turned out. There were a couple of scares here and there (one horrible incident of accidentally swapping our train and test sets for a few days comes to mind) but overall the performance we reached was significantly past our goal and we learned an incredible amount. We're quite proud of how we were able to take such a weak model and turn it around into a, though not state of the art, mostly capable STS model.
+
+At the start of this project we made a pact to try and be principled with each decision that came our way. For example, we made it a rule to never just make a model deeper or wider for no reason. We tried to stay as minimal as possible throughout the whole project and we feel that paid off. We believe that every decision in our architectural design process (Mostly described in Section \ref{Architecture}) had good and clear motivation. We're also incredibly proud of our experimentation and overall scientific process.
+
+If we had more time we would definitely choose to try and make our model a more general embedding model (Likely though some kind of pooling mechanism) and work towards applying it to the Massive Text Embedding Benchmark \cite{muennighoff2022mteb}. We have some other experiments that we briefly described in the section on architecture that we believe are the way forward in terms of overall performance, we just think they would take significant time and research effort to prove fruitful. Finally, we would do more thorough model comparisons (I.e. full-scale finetuning \verb|gpt2-medium| to the task, using our architecture with different base models) so we have a clearer picture of how our architecture stacks up against other choices. There aren't many models on the MTEB or STSB leaderboards that are similar to ours, so it's hard to get perspective. Even parameter count isn't necessarily a good measure of how close we are because the vast majority of our "parameters" are not trained.
+
+We were quite surprised none of the pooling and attention mechanisms worked significantly better than our architecture. Our key takeaway from those experiments is that the finetuning literature relies on being able to shape the entirety of the representation present in the base model. When you can't control every part of the representation (as in our scenario where we're only "reading" the activations) attention and other linear-combination based methods (Such as sum or mean pooling) just don't make sense. The base model likely learns to use different tokens in the residual stream quite differently, likely not in a way that can just be arbitrarily combined.
+
+Our biggest takeway by far from doing this project is that research is an incredibly fun and collaborative process. We all thoroughly enjoyed all the exploration, reading, experimentation, and rebuilding our mental models over and over to try and make good decisions. As for what we learned, we all believe we made significant progress in our understanding and ability in, among other things, training and debugging neural networks, transformer models, metric and similarity learning, reading and consuming research papers, scientific writing, and collaborative research.
 
 \section{Division of Labor}
 % Division of labor: Briefly outline who will be responsible for which part(s) of the project.
 \begin{itemize}
-    \item \textit{Hayden.}
-    \item \textit{Nick.} 
-    \item \textit{Oliver.} 
+    \item \textit{Oliver.}  Lead the research effort and designed and implemented the major architectural experiments. Took on most of the report writing.
+    \item \textit{Hayden.} Lead the analysis effort and discovered the bottleneck in the autoencoders. Performed the first manual hyperparameter experiments and investigated intermediate correlations that helped improve our understanding of the model. Worked with Nick to write the ethics section.
+    \item \textit{Nick.}  Lead the automated hyperparameter optimization effort and proposed alternate approaches for improving our score. Performed a significant portion of the literature review and collected techniques and paths we could take. Worked with Hayden to write the ethics section.
 \end{itemize}
+Our group is quite happy with how the work was distributed and feel our individual strengths were able to be leveraged whilst also allowing each individual to specalize deeply into what they were interested in.
 
 \newpage
-\section{Appendix: \textit{STSB} dataset leakage}
+\section{Appendix: Qualitative Analysis of Model Errors} \label{error analysis}
+To better understand our model's limitations, we sorted all sentence pairs in the STSB test set by the absolute difference between predicted and true similarity scores. Below are the five pairs with the largest errors, representing our model's most significant failures.
 
-%% --------------------------------------------------------------
-%%                         Start here
-%% --------------------------------------------------------------
-%% \hline
-% \section{Check-in Highlights}
-% \subsection{Introduction}
-% Our project is essentially trying to figure out if using a small LLM like \verb|gpt2-medium| as a feature extractor (Frozen, we don't fine-tune it. Exactly like \verb|CLIP| in homework four) is a viable option for a simple task like semantic text similarity (STS) \cite{STS}. At its face, taking basically any of GPT-2's activations (E.g. last token, last layer) produces incredibly low quality embeddings for STS (Less than $20\%$ pearson correlation. See figure \ref{fig:raw-corr}). Although using LLMs for text embedding is increasingly common \cite{LLM2Vec} \cite{NVEmbed} \cite{RepImprovesLLM} \cite{LLMEmbed}, there are very few papers who \textit{do not fine-tune or modify} the original LLM. Our goal was to find a decent architecture that can make sense of \verb|gpt2-medium|'s embeddings and produce a viable STS model. STS performance is measured by the pearson correlation between a model's similarity judgment for a set of sentence pairs and a set of human similarity scores. State of the art on this task is \verb|90-93%| correlation. The data used to train our model are the twenty-four (\verb|gpt2-medium| has twenty-four layers) final tokens at each layer after the final residual connection has been added. This is a standard latent \footnote{We refer to this "final token at each layer after the final residual connection" as the layer's "latent" for the remainder of this report. We use the term "latent" and "activation" interchangeably.} to extract when finetuning LLMs \cite{LLMEmbed}, particularly for decoder-only models like GPT-2 where the final token has attended to the entire sequence. We felt it was reasonable enough choice even if we're not finetuning. These are extracted from \verb|gpt2-medium| after a given sentence is passed through and can be understood as twenty-four "embeddings" produced by the LLM for a particular sentence.
+\begin{verbatim}
+"Not 'hiding the ball' on Russia: Obama",
+"Obama says he's not 'hiding the ball' on Russia",
+True similarity: 0.8800
+Predicted: 0.2084
 
-% \subsection{Insights}
-% The most interesting thing we can share so far is our supervised performance on STSB (STS Benchmark) on which we achieve \verb|75.36%| pearson correlation. Although not state of the art, we're incredibly happy with this result considering our approach is incredibly experimental and we got this result with (comparatively) very little computational resources.\\\\
-% The model we used to achieve this is a modified layerwise siamese network (As in we take a latent vector at each layer of \verb|gpt2-medium| and feed it into a designated siamese network) with an unsupervised pretraining step prior to supervised STS training (See the \textit{"Architecture"} section below for more details and clarifications). Our score is more than \textit{triple} the performance of the raw embeddings produced natively by \verb|gpt2-medium| (Figure \ref{fig:raw-corr}). We also found strong empirical evidence for the hypothesis that later layers in transformer models store meaningfully more "information" (In the information theoretic sense) than earlier layers (See the \textit{"Accidental reproduction"} section below for more information) which directly influenced changes to our pretraining approach, breaking our previous correlation record of \verb|68%|.
+"Taiwan's economy grows 2.27% in April-June quarter",
+"China's economic growth rebounds to 7.8% in latest quarter",
+True similarity 0.2000
+0.8955
 
-% \subsection{Challenges}
-% We've faced a number of challenges, most of them related to training and regularizing our model. We've found this architecture and dataset to be highly resistant to hyperparameter changes and vulnerable to overfitting. Throughout many, many hyperparameter experiments we found no benefit from added dropout, learning rate changes, deeper siamese networks, among other changes (See the \textit{"Hyperparameter woes"} section below for more details). Our model also produces low quality unsupervised embeddings (\verb|~30-40%| pearson correlation), which is likely an artifact of our pretraining approach focusing on compression over preserving semantic relationships. Moreover, we found that more pretraining (\verb|>20k| sentences) actually decreased performance in almost every scenario, while too little pretraining reverted us back to baseline performance, suggesting a surprisingly narrow optimal window for the pretraining phase.
+'A man is laughing with a woman',
+'A man and a woman laughing.',
+True similarity: 0.9600
+Predicted: 0.2572
 
-% \subsection{Plan}
-% Our immediate focus is on systematic hyperparameter optimization using Optuna. Although our previous hyperparameter experiments were discouraging, we believe a more principled search of the parameter space might reveal configurations we missed, particularly for the autoencoder pretraining phase. We're also working to finalize our supervised performance results and potentially improve them through targeted regularization strategies. The significant gap between our supervised and unsupervised performance (\verb|75.36%| vs \verb|~30-40%|) remains a key area of investigation - we want to better understand if this gap reveals something fundamental about how GPT-2 encodes semantic information or if it's merely an artifact of our training approach. Finally, we're exploring various pooling strategies to produce single-vector embeddings rather than our current layer-wise approach. If successful, this would make our model more generally applicable beyond pure STS tasks and potentially reveal more about how semantic information is distributed across GPT-2's layers.\\\\
-% One particularly promising direction we want to explore is replicating the NLI pretraining approach from Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing}. Given that overfitting has been a persistent challenge with our many small independent models, we believe additional pretraining on a structured task like NLI could help build more robust representations before STS fine-tuning. Whether or not it's possible to do a complex causal reasoning task like NLI solely using LLM latents is yet to be seen.
+'Supreme Court to Hear Voting Rights Act Case',
+'Supreme Court to hear corporate human rights case',
+True similarity: 0.2800
+Predicted: 0.9893
 
-% % No more highlights B)
-% \newpage
+"Hassan Rouhani wins Iran's presidential election",
+'Maduro wins Venezuelan presidential vote',
+True similarity: 0.0400
+Predicted: 0.8193
+\end{verbatim}
+These are just the worst performing sentence pairs but they show a trend seen by browsing the top fifty or so. Clearly our model has a different idea of similarity than STSB does, but that model isn't always completely off base. Consider the last sentence pair in this set. Both sentences describe a particular figure winning a particular election. Obviously, semantically, these two sentences are nothing alike, they are describing two completely different figures winning two completely different elections, but they are "semantically similar" in a more abstract sense. Similarly with the Taiwan/China pair and the supreme court pair. Did our model learn to recognize these as similar? Or is it just picking up surface level syntactic similarity? Regardless, the model clearly also just fails to see the similarity in some pairs, as seen in the man and woman laughing pair. Interestingly, the model also produces the following prediction:
 
-% \section{Thorough check-in}
-% \subsection{Introduction}
-% Our project is an investigation into a few related areas. In short, we wanted to see if we could develop an architecture that could take the intermediate activations of a pre-trained decoder-only large language model (Henceforth LLM) and use them to do text-embedding tasks. We chose sentence similarity as our primary focus and motivation because of its simplicity. Importantly, in contrast to most other work using LLMs for text embedding, we are \textit{not} fine-tuning the model. We are simply taking a subset of the intermediate activations and treating them as a kind of \textit{"feature extracted"} (frozen) representation.\\\\
-% We chose this idea for several reasons.
-% \begin{enumerate}
-%     \item Our original motivational question was: \textit{"Do ‘similar’ prompts (to human readers) have ‘similar’ (under some metric) representations to a given language model?"}. By training a sentence-similarity model on LLM activations, we believed we could make progress on answering this question by \textit{learning} a transformation of the activations that correlates to semantic similarity.
-
-%     \item \textit{If} we could train a small model to interpret a given LLM's activations and produce a useful text embedding (or set of embeddings) from them, we could skip costly fine-tuning and simply pre-train and fine-tune the small "interpreter" model. Pretrained small LLMs are cheap to do forward passes on and very plentiful, so if we could \textit{just} use the intermediate activations and not have to do backward passes we could get a lot of functionality for very little compute.
-
-%     \item We also wanted to investigate the question: \textit{Do multiple intermediate activations perform better than just the last?} Typically when doing finetuning or transfer learning you remove the classifier end and use the last intermediate representation as your "feature extracted representation". We wanted to see if there was any performance benefit in using \textit{multiple layer's} worth of representation. This is clearly the case in the finetuning setting \cite{tang2024poolingattentioneffectivedesigns} but it's unclear if it will work here.
-
-%     \item From an interpretability standpoint, most distance or similarity measures (E.g cosine similarity) do not correlate strongly with \textit{human ideas} of similarity (Figure \ref{fig:raw-corr}). By training a similarity learner on LLM activations, grounded in human ideas of similarity, we hoped to produce a more interpretable measure of similarity for LLM activations.
-    
-%     \item There just isn't that much work on this particular topic. For this task you'd typically finetune the LLM using LoRA \cite{hu2021loralowrankadaptationlarge} or simply just use an existing text embedding model. We hoped to discover interesting properties and learn a lot about what it's like to try and \textit{"disentangle"} an LLM's intermediate activations into something useful by pursuing this project. \footnote{There was only one paper we could find doing a similar setup -- extracing latents from an LLM and applying them to a task -- but it is very low quality and does not reveal many of the important details \cite{gpt2malware}}
-
-% \end{enumerate}
-%  We chose \verb|gpt2-medium| (355M parameters) as our \textit{"base model"} for study because Oliver was familiar with its architecture and it readily fit onto all of our GPUs. We also did minor experiments on \verb|qwen2-0.5B| (391M parameters).
-
-% \subsubsection{Training and Performance Metrics}
-% We chose to target the STS Benchmark \cite{STS} which is a supervised sentence similarity benchmark comprised of sentence pairs and a human rated similarity score (E.g. \textit{('A plane is taking off.', 'An air plane is taking off.', sim=1)}).\\\\
-% We began our investigations by first choosing which intermediate activations from \verb|gpt2-medium| to feed into our model. We chose to take the \textit{last token at each layer, after the residual connection} (Henceforth called a \textit{latent}). This strategy is not original and is fairly standard in the \textit{fine tuning} literature \cite{LLMEmbed}. We expected it to do fine for our task given that \verb|gpt2-medium| uses causal attention, even though we're not fine tuning.\\\\
-% This gives us, for each sentence, twenty-four \verb|1024| dimensional vectors (\verb|n_layers x d_model|). One of the main challenges we wanted to overcome by taking this project on was finding a sensible way to \textit{actually use} such a high volume and dimensionality of data.\\\\
-% The performance metrics for STS are typically Spearman's rank correlation coefficient and normal Pearson correlation between the predicted similarities of pairs of sentences and the human rated similarities. State of the art for this task is around \verb|90 - 92%| in both spearman and pearson according to the MTEB leaderboard \cite{muennighoff2022mteb}.
-
-% \subsubsection{Architecture}
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1\linewidth]{model_diagram.png}
-%     \caption{Model Diagram}
-%     \label{fig:model-diagram}
-% \end{figure}
-
-% The architecture we've settled on so far is fairly simple (Figure \ref{fig:model-diagram}). We train an ensemble \footnote{When we say \textit{"ensemble"} here we don't mean it in the traditional sense. Although each of the autoencoders are acting independently, they are joined together after pretraining. They still see independent and different inputs. We had trouble finding a suitable name for this kind of component, so we stuck with \textbf{"ensemble"} even if its not technically correct.} of autoencoders to reconstruct each layer's activations (I.e. twenty-four autoencoders). We pretrain these on twenty-thousand sentence activations generated from the GenericsKB \cite{huggingface:genericskb} dataset. Then, after this pre-training we take the encoder end of each autoencoder and begin STS supervised training. To do this we treat each autoencoder as its own layer-specific Siamese network. We then pass each layer's activation through its respective autoencoder, take the cosine similarity of the two resulant vectors, and collect all twenty-four cosine values into a vector. This is then passed into a simple MLP to do basic pattern recognition on the similarity values.
-% \subsection{Insights}
-% % Are there any concrete results you can show at this point? How is your model performing compared with expectations?
-% Our model is performing \textit{significantly better than expected}. We originally were aiming for roughly \verb|60%| pearson correlation as a stretch goal. Our model achieves a \verb|75.36%| pearson and \verb|73.21%| spearman correlation using our approach. This is nowhere near state of the art, but getting this result takes under two hours of training (On an \verb|RTX3060 12g|) and under four total if we include generating the activations for the pre-training and supervised training beforehand. We are incredibly happy with our performance so far. Moreover we were able to replicate our results (Actually, slightly better at \verb|+~2%| on both pearson and spearman) using \verb|qwen2-0.5b|, a completely different model. The only thing we changed was the input dimension to our autoencoders because \verb|qwen2-0.5b| has a different hidden dimension, otherwise it was a drop-in replacement. This \textit{suggests} that our model would generalize to larger models.
-
-% \subsubsection{Interesting findings}
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.85\linewidth]{encoder_loss.png}
-%     \caption{Autoencoder loss by layer. $\text{d}_\text{bottleneck} = 256$}
-%     \label{fig:autoencoder-loss}
-% \end{figure}
-% \paragraph{Using autoencoders for pretraining.} We had hit a wall after developing the ensemble of siamese networks approach and performance plateaued for quite a few days at around \verb|60-68%| pearson correlation. We theorized that maybe we can't perform better because we don't have \textit{"enough time"} during supervised training to build good representations. We then thought to try and "pre-train" our siamese networks by first training them as encoders in a set of autoencoders. Our rational for this was that training as an autoencoder would first force the networks to build a good representation of their respective layers before we get anywhere near supervised training. We tried training on \verb|10,000|, \verb|20,000|, and \verb|50,000| sentences from the GenericsKB dataset \cite{huggingface:genericskb} but saw no difference after \verb|20,000|. On the first few training attempts we noticed that performance did not improve at all, even after pre-training. We then graphed each autoencoder's loss over time and got the interesting results of Figure \ref{fig:autoencoder-loss}. This inspired us to increase the bottleneck dimension at the later layers \footnote{For layer i's encoder, $d_\text{bottleneck}(i) = 256 \text{ if } i < 12 \text{ else } 512$}. This brought performance up to where it is now for a gain of roughly \verb|7%|, even though the encoders/pre-trained siamese networks have fewer parameters overall. This suggests that 256 bases is simply not enough to effectively represent the information in the later layers without significant losses, which aligns with our observation that deeper autoencoders didn't help - the issue wasn't architectural complexity but rather the fundamental dimensionality of the bottleneck.\\\\
-% We also found that training the autoencoders, even if loss wasn't moving, still had a meaningful effect. We found that up until 250 epochs (About an hour of training) we still saw downstream performance benefits even though reconstruction loss did not significantly improve.
-
-% \paragraph{Accidental reproduction} When producing Figure \ref{fig:autoencoder-loss} we also plotted the average norm and variance of each layer's latent vectors (For the pretraining dataset) and noticed that both quantities increased exponentially with the layer number. We then did some research and found that this is a known result \cite{resid-norm-grows}. It was incredibly satisfying to find out what we had "mined" from our experiments was producing known but still interesting facts about transformers. \\\\
-% Intuitively, you'd think this would mean that the loss values we're seeing in Figure \ref{fig:autoencoder-loss} would then not be nearly as bad as they seem. It's $L_2$ reconstruction loss, so if the vector magnitude is higher then you'd expect on average a higher loss even if the \textit{proportion} of reconstruction error is small. Regardless, we could not show any benefits of autoencoder pre-training without increasing the bottleneck size in the later autoencoders. This leads us to believe that the \textit{problem of compression} gets harder, not just the vector magnitude, as the layers go on. This is substantiated by the fact that having a \textit{deeper} autoencoder at later layers (still retaining the bottleneck) \textit{did not improve downstream supervised performance}. Only widening the bottleneck improved performance. This is further evidence that there is a higher quantity of non-redundant information that accumulates as the layers go on in a forward pass of a transformer.
-
-% \paragraph{Ensemble $\stackrel{?}{>}$ Individual} For all of the same reasons that training \textit{all} of the siamese networks together was difficult, so too was training any \textit{particular} siamese network. We found that the best individual siamese network performed with a pearson correlation of \verb|71%|. As you might guess, it was the last one. We haven't had enough time yet to really investigate if our ensemble is better than just taking the last latent, so we won't conclude anything about performance yet but it would not be shocking (nor invalidating) to see that last latent hold all of the information to match the ensemble model. Although we spent most of this project focused on the ensemble model, that was mostly just out of curiosity, not because we had firm convictions that it would be significantly better. We honestly expected the network to ignore more of the layers and just jump right to betting totally on the last one but this wasn't the case. We found that when trying to aggregate the cosine scores, an MLP did the best over something like mean pooling. We expect this is because certain patterns probably appear in the similarity scores that, if learned, give a better picture.\\\\
-% Intuitively, though, it might not be obvious that using multiple layer's worth of latents would be more useful than just the last because of the residual connection employed in transformer models -- If the information from the last $n$ layers is just getting propogated anyway, why bother using them independently? We believe that although this is mostly correct, it ignores the findings of Bricken et. al \cite{bricken2023monosemanticity} that demonstrate individual layers having individual responsibilities and "resolving" independent parts of the broader context of a given text input. That's why we believe that multiple layer's embeddings will probably, in the limit, be significantly more useful than just the final layer. Also intuitively, but from a different angle, because a transformer's ultimate goal is token prediction, we could imagine that information in intermediate layers could easily be thrown away because it's not useful for next token prediction, even if it could be useful in another domain -- another reason to consider multiple layer's latents.
-
-% \paragraph{Interesting behavior post supervised training}
-% We produced a really interesting graph (Figure \ref{fig:supervised-layer-corr}) wherein after supervised training (I.e. training the model in Figure \ref{fig:model-diagram}), the individual siamese networks did not have the clear increasing correlation with human similarity but instead had a jagged and incredibly nonlinear pattern. We don't really have a good explanation for this but we thought it was cool. Maybe the network is learning to "reuse" some of the less important siamese networks? Maybe its using them to extract really specific information? If it was just ignoring them you'd expect it to do that in the MLP, so we're hesitant to say this is just an artifact of the network learning that particular layers are more important than others.
-
-% \subsection{Challenges}
-
-% % What has been the hardest part of the project you’ve encountered so far?
-
-% \subsubsection{Hyperparameter woes}
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1\linewidth]{final_four_epoch_loss.png}
-%     \caption{Loss by layer group over 100 epochs using group-adaptive hidden layer size}
-%     \label{fig:epoch_loss}
-% \end{figure}
-% After seeing the pretraining approach improve performance, we shifted our attention to improving the pretraining reconstruction performance. Our rational was that, at least initially, higher reconstruction performance correlated strongly to higher downstream performance. In order to increase performance, a series of hyperparameter and architecture experiments were conducted. For any given experiment to be considered a potential performance boost, it first needed to decrease the train and test loss by epoch 100 from the baseline autoencoder structure. Once all experiments were conducted, those that passed this check would then be combined and adopted into the autoencoder architecture that then fed into the siamese network, and thus evaluate if "downstream" performance in the form of final train and test correlation was improved based on the changes. The original plan was to perform the experimentation at all layers, however the later layers had the highest loss, so naturally improvements in them would have a greater effect and would be the priority during this experimentation. Furthermore our earlier results suggested that later layers contain significantly higher non-redundant information so the criteria for success was narrowed to improvements in the train and test loss for the final four layers while keeping the structure for other layers the same.
-% %Furthermore, the final four layers would have the highest loss and theoretically capture the most complex information, so the criteria for success was narrowed to improvements in the train and test loss for the final four layers while keeping the structure for other layers the same. 
-% For the sake of simplicity, of the 24 layers of GPT-2, 0-7 were categorized as early, 8-15 as mid, 16-19 as mid late, and naturally 20-23 as final four. The progression of the baseline train and test loss to beat can be seen in Figure \ref{fig:epoch_loss}, and the final train and test loss values to beat in Table \ref{tab:final_epoch_losses}.
-% \begin{table}[h!]
-%     \centering
-%     \begin{tabular}{|c|c|c|c|}
-%     \hline
-%     \textbf{Epoch} & \textbf{Phase} & \textbf{Train Loss} & \textbf{Test Loss} \\ \hline
-%     \multirow{4}{*}{100} & Early & 0.048 & 1.121 \\ \cline{2-4} 
-%      & Mid & 0.260 & 3.492 \\ \cline{2-4} 
-%      & Mid Late & 0.847 & 8.891 \\ \cline{2-4} 
-%      & Final Four & 2.995 & 18.826 \\ \hline
-%     \end{tabular}
-%     \caption{Autoencoder losses at Epoch 100 across different phases}
-%     \label{tab:final_epoch_losses}
-% \end{table}\\
-% %%%% NOTE TO HAYDEN. I changed this section a little bit because when training an autoencoder, you need the bottleneck dimension to be less than the original input dimension. The results are the same either way, but I just report where d_bottleneck < d_input
-% %
-% % First, the number of hidden layers for the final four layers was increased from 256*3 to 256*4 for layer 20, 256*4 to 256*5 for layer 21, 256*4 to 256*6 for layer 22, and 256*4 to 256*7 for layer 23. The rationale behind this was that later layers need more complexity to effectively capture nuances in text similarity, and while enhanced scaling was already occurring a potential enhancement of the scaling could lead to better performance. This experiment saw marginal improvement, so it would be considered a candidate for future adaptation.\\\\
-% First, we tried widening the bottleneck dimension in the final four layers from 512 all the way to 768. The rationale behind this was that later layers need more complexity to effectively capture nuances in text similarity, and while enhanced scaling was already occurring a potential enhancement of the scaling could lead to better performance. This experiment saw marginal improvement on the test set, so it would be considered a candidate for future adaptation.\\\\
-% Second, the architecture of the encoder and decoder was expanded to include one more activation layer making them deeper. The added depth would provide more parameters and non-linear transformations, which could allow the model to learn more complex mappings and potentially reduce the high reconstruction loss. This experiment saw a significant worsening in performance, and would not be considered a candidate. We believe this is because the added complexity caused the model to overfit on a subset of the distribution.\\\\
-% Third, the learning rate for the final four layers would be doubled from baseline. The rationale behind this is that the later layers could have a larger space to traverse to find an optima since their feature space would naturally be more complex. In the baseline model, layer 0 has a learning rate of 3e-4, and each layer afterward is gradually increased by multiplying 3e-4 by 1 + layer number / 24. For example, the final layer would have exactly double the learning rate of the first layer. In this experiment, the scaled learning rates of the final four were doubled. This experiment saw marginal improvement in the train loss and a nonsignificant worsening of test loss, so it would be considered a candidate.\\\\
-% Fourth, more dropout layers were introduced in both the encoder and decoder. The rationale behind this was to add more regularization to potentially enhance the generalizability, and hence performance, of the final four layers. However, this experiment saw a dramatic worsening of performance, and would not be considered a candidate. \\\\
-% The end results of the experiments can be seen in Table \ref{tab:loss_comparison}.
-% \begin{table*}[h!]
-%     \centering
-%     \begin{tabular}{|l|c|c|c|c|}
-%     \hline
-%     \textbf{Experiment} & \textbf{Train Loss} & \textbf{\% Difference (Train)} & \textbf{Test Loss} & \textbf{\% Difference (Test)} \\ \hline
-%     Baseline & 2.995 & - & 18.826 & - \\ \hline
-%     Increased Bottleneck Dimension & 2.377 & {\color{green}-20.64\%} & 18.246 & {\color{green}-3.08\%} \\ \hline
-%     Increased Activation Layers & 4.774 & {\color{red}+59.44\%} & 28.300 & {\color{red}+50.33\%} \\ \hline
-%     Enhanced Learning Rate & 2.367 & {\color{green}-20.96\%} & 18.840 & {\color{red}+0.07\%} \\ \hline
-%     More Dropout & 13.555 & {\color{red}+352.60\%} & 29.610 & {\color{red}+57.27\%} \\ \hline
-%     \end{tabular}
-%     \caption{Experiment results and differences from the baseline. Loss values are the mean for the final four layers.}
-%     \label{tab:loss_comparison}
-% \end{table*}\\
-% Based on the results, the two candidates that would be incorporated into the autoencoder were increased bottleneck dimension and enhanced learning rate. Once both were incorporated, the autoencoder saw a near 5\% improvement over the baseline and was then used in the siamese network to asses downstream results. In the end, 4 million more parameters were added to the model but \textit{no significant improvement in downstream performance was yielded}. Also, after the end of this experimentation, it was discovered that the original view of the later layers having higher loss was not entirely correct. The magnitude of the vectors produced by increasing layers is simply larger, so the loss appears high but all layers are performing roughly the same in terms of proportional reconstruction loss. However, given that all the layers perform similarly, the conclusions of this experiment are not nullified and can be assumed to apply to all layer groups.\\\\
-% Another round of experimentation was performed, but at the normal early, mid, and late layer classifications as opposed to only the final four and with different approaches. But, the same pipeline of needing to beat train and test loss of the baseline autoencoder model, then combining candidates and feeding into the siamese network would be applied. The first was to implement a learning rate scheduler, with the rationale being it would reduce the learning rate over time, preventing the model from overshooting optimal weights, which could be particularly advantageous for later layers. Within PyTorch there are three mainstream options available for learning rate schedulers:
-% \begin{itemize}
-%     \item \textbf{Exponential Decay (ExponentialLR)}: Gradually reduces the learning rate by a factor after every epoch.
-%     \item \textbf{Cosine Annealing (CosineAnnealingLR)}: Reduces the learning rate following a cosine function.
-%     \item \textbf{Reduce on Plateau (ReduceLROnPlateau)}: Reduces the learning rate when a metric (e.g., validation loss) stops improving.
-% \end{itemize}
-% The most simple and logical choice was ReduceLROnPlateau since it was observed that validation loss does not significantly improve past at different epochs depending on the layer. If validation loss did not improve over 20 epochs, i.e. the patience, the learning rate would be reduced by 20\%, and so on until it reached a minimum learning rate of 1e-6. Implementing this scheduler led to no improvement in performance, but cosine annealing was also implemented since the inherent occasional reset of learning rate could benefit the deeper layers. For this scheduler the length of the cosine cycle was 30 epochs, meaning the learning rate would reduce to the minimum, 3e-6 in this case, and then reset to its original value, then decrease again until the max number of epochs was reached. Cosine annealing did not result in improved performance, so neither learning rate schedulers would be considered candidates.\\\\
-% Second, a small weight decay term of 1e-4 was added to the optimizer of the similarity learner involved in downstream performance. This does not involve the autoencoder, but the rationale behind this is that the siamese network is clearly overfitting, so by adding regularization to the downstream the test correlation could possibly be improved with less overfitting. However, this led to a 5\% decrease in final test correlation, so this experiment was not incorporated.\\\\
-% Third, as another attempt at more regularization in the ensemble, the dropout rate of the autoencoder was increased from .1 to .2. This is different from the previous dropout experiment from the final four testing in that there are the same number of dropout layers in the encoder and decoder, but at each there is more dropout applied. This experiment saw a dramatic worsening of train and test loss across all layers, so the change was not implemented.\\\\
-% %%%% NOTE TO HAYDEN. I like this idea but I don't think it's principled enough to be added to our discussion. As is, using KL doesn't really make sense unless we do all the other stuff for VAE's. I think using a VAE is a worthwile avenue to pursue but this is kind of like putting a suit on a baby and wondering why he won't go to work
-% %
-% % Fourth, the loss function of pure mean squared error was modified to include a Kullback-Leibler (KL) divergence term to make the latent representations close to a normal distribution. The rationale behind this is to take the underlying method powering Variational Autoencoders, KL divergence, and use it here to make latent representations smoother and more generalizable to improve test loss performance. The combined loss function took the following form:
-% % \[
-% % \text{Loss} = \text{MSE} + 10^{-3} \cdot \text{KL}
-% % \]
-% % While this idea was nice in theory, in actual application it increased computational complexity severely and made the performance unreliable. As for the final performance, it performed slightly worse than the baseline, so it was not incorporated.\\\\
-% Overall, the experimentations performed all resulted in no significant improvement to downstream performance, which was the goal. Given the breadth and depth of the experiments, this could indicate a performance ceiling is being met with the given architecture, and hyperparameter alteration is not the solution to breaking through said ceiling.
-
-% \subsubsection{Attention mechanisms} A natural formulation of our problem is as a set of twenty-four "tokens" that we want to "attend" to to pull out relevant information. We could not find a setup in which this helped our performance in any way. To offer some intuition, attention mechanisms make the assumption that different tokens can be linearly combined in a meaningful way. This \textit{empirically} does not appear to be the case with the latents extracted from \verb|gpt2-medium| suggesting further that different layers have meaningfully different geometries and underlying spaces within their activations (As in Bricken et. al.\cite{bricken2023monosemanticity}).
-
-% \subsubsection{Pooling troubles}
-% We tried numerous pooling strategies, none of which worked well. Both at the GPT-2 residual stream token level and at the autoencoder representation level, our attempts at pooling - including approaches similar to those outlined in \cite{tang2024poolingattentioneffectivedesigns} - produced consistently worse results than our layer-wise approach. Simple strategies like mean pooling the latents at each token or combining the twenty-four latents into a single vector all degraded performance.
-% \paragraph{Potential future direction} \label{pooling-idea} Another pooling strategy we tried was inspired by the "semantic subspace" idea of Bolukbasi et. al \cite{bolukbasi2016mancomputerprogrammerwoman}. Instead of pooling the latent vectors from GPT-2, we instead pooled the embedding vectors from our encoders. We modified our pretraining approach from the standard bottlenecked autoencoder to a more sophisticated design:
-% \begin{enumerate}
-%     \item Iteratively project down each latent as normal until it reaches the target bottleneck dimension (No different from normal encoder)
-%     \item Project that bottlenecked representation back up to a high dimensional space (E.g. \verb|2048|)
-%     \item Sum all of these up-projected vectors (I.e. a sum with twenty-four terms) to produce a single embedding vector. Call this the \textit{total embedding}.
-%     \item Now, instead of twenty-four decoders going from the bottleneck dimension up to the input dimension, we instead pass the total embedding to twenty-four separate decoders (I.e. the same vector to twenty-four different encoders)
-%     \item Train autoencoders as normal using reconstruction loss
-% \end{enumerate}
-% The goal of this setup is to learn a \textit{model-wise} representation that reduces redundancy by creating clear semantic subspaces and annihilating duplicate information. Summing is the natural operation here because the model could learn to project different information to different subspaces and keep everything else close to zero.\\\\
-% A very naive implementation of this approach produces a single embedding that achieved a \verb|63%| pearson correlation after supervised training - lower than our layerwise approach but significantly better than naive pooling strategies. We believe this direction shows promise for creating unified embeddings, but it would require substantial research effort to fully develop. If given more time, we would have pursued this approach more deeply, as the theoretical elegance of learning orthogonal (or nearly orthogonal) semantic subspaces is particularly appealing.
-
-% \subsubsection{Unsupervised performance}
-% Unlike most other models on the leaderboard, our unsupervised performance is \textit{dramatically} worse than its supervised counterpart (\verb|~30-40%| depending on the layer vs \verb|75.36%| supervised. SOTA has closer to a \verb|10-20%| difference). We believe this is because of the autoencoder pre-training approach we took. The autoencoders produce a \textit{compressed} representation, not an especially \textit{spatially related} representation - they are trained to minimize reconstruction loss, not preserve semantic distances. That being said, our supervised performance does eventually do okay, so we're actually optimistic about the quality of the encoded embeddings and believe that although they're not particularly good \textit{as-is} for sentence similarity, they are incredibly rich and useful. This result, while on its face discouraging, is actually something we really want to explore in the future. How is it possible that we can reconstruct a kind of semantic spatiality from otherwise only weakly spatial embeddings? Is it just pattern matching or is it learning to extract complex information from the encoded representation? This gap between supervised and unsupervised performance contributes to our belief that GPT-2's semantic information is encoded in ways that don't naturally align with cosine similarity (or really any simple spatial measure), but can be "disentangled" with appropriate supervision.
-
-% \subsection{Further plans}
-% Our further plans are mostly in cleanup, trimming our model down, getting better graphs and building up our less than stellar experiments. We'll also still continue with changing architecture, trying different regularization schemes, etc. We're also currently working on doing hyperparameter sweeps to see if we can squeeze out any extra performance.\\\\
-% The last major change we want to try and make is replicating the NLI pretraining approach in the Sentence-BERT \cite{reimers2019sentencebertsentenceembeddingsusing} paper. One thing we've been wrestling with this whole project is overfitting. We're using many, many independent small models trying to solve a hard task -- overfitting generally wins over generalization here. We're incredibly surprised and happy with the results of the autoencoder pretraining and think even more pre-training will only help.\\\\
-% Finally, we're considering putting more time and effort into the experiments outlined above  in \ref{pooling-idea} but want to try and maintain a balance between totally new ideas and consolidating what we already have and strengthening our existing results.
-% % \verb|TODO| : Consider trying contrastive loss for STS dataset via thresholding or smn. Would need to look at distribution of scores (I think its heavy on the 0's)
-
-% \newpage
-% \appendix
-% \section{Appendix: Graphs}  % Creates an unnumbered Appendix heading
-
-% \renewcommand{\thefigure}{A.\arabic{figure}}
-% \setcounter{figure}{0}  % Reset figure counter to start from 1
-
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.57\linewidth]{raw_cosine_sim.png}
-%     \caption{Layerwise average correlation between gpt2-medium's embeddings and their cosine similarity vs. human similarity score for the STS training pairs}
-%     \label{fig:raw-corr}
-% \end{figure}
-
-% \begin{figure}[!htb]
-%     \centering
-%     \includegraphics[width=0.5\linewidth]{supervised-layer-corr.png}
-%     \caption{Post supervised training encoder embedding cosine distance correlation with human STS score}
-%     \label{fig:supervised-layer-corr}
-% \end{figure}
+\begin{verbatim}
+'A brown dog is jumping.',
+'A brown dog is jumping',
+True similarity: 1
+Predicted: 0.4735
+\end{verbatim}
+Which shows that the model has \textit{not learned to recognize completely identical sentences}. This might imply that our training set could use more identical pairs or that our model needs to be restructured in such a way that the ones vector (\verb|(1, 1, ..., 1)|) produces a \verb|1| at the end of the MLP. This is because our layerwise siamese networks use cosine similarity, so the output at each layer for two identical prompts is always the ones vector. In any case, this is a significant limitation of our architecture. Moreover many of these examples show how our model confuses surface level syntactic similarity with deeper semantic similarity.
 
 \newpage
+
 \bibliography{mybib}{}
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
